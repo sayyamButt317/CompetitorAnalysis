@@ -4,9 +4,10 @@ interface ContentPaginationProps {
   totalItems: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
+  pageSizes?: number[];
 }
 
-const pageSizes = [12, 24, 48];
+const defaultPageSizes = [12, 24, 48];
 
 export function ContentPagination({
   page,
@@ -14,6 +15,7 @@ export function ContentPagination({
   totalItems,
   onPageChange,
   onPageSizeChange,
+  pageSizes = defaultPageSizes,
 }: ContentPaginationProps) {
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const start = totalItems === 0 ? 0 : (page - 1) * pageSize + 1;

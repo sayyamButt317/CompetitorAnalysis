@@ -1,9 +1,10 @@
 import type { CompetitorAnalysisRequest, CompetitorAnalysisResponse } from "@/types/api";
 import type { CompetitorsListResponse } from "@/types/competitors";
 import type { ContentListResponse } from "@/types/content";
+import type { HashtagListResponse } from "@/types/hashtag";
+import { formatApiError } from "@/lib/format-api-error";
+import { parseJsonResponse } from "@/lib/parse-json-response";
 import { Endpoint } from "./endpoint";
-
-
 
 export const CompetitorAnalysisApi = async (
   payload: CompetitorAnalysisRequest,
@@ -16,16 +17,12 @@ export const CompetitorAnalysisApi = async (
     body: JSON.stringify(payload),
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse<
+    CompetitorAnalysisResponse & { error?: string; detail?: unknown }
+  >(response);
 
   if (!response.ok) {
-    const message =
-      typeof data?.error === "string"
-        ? data.error
-        : Array.isArray(data?.detail)
-          ? data.detail.map((d: { msg?: string }) => d.msg).join(", ")
-          : "Competitor analysis request failed";
-    throw new Error(message);
+    throw new Error(formatApiError(data));
   }
 
   return data;
@@ -36,24 +33,44 @@ export const fetchCompetitorsList = async (): Promise<CompetitorsListResponse> =
     cache: "no-store",
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse<
+    CompetitorsListResponse & { error?: string; detail?: unknown }
+  >(response);
 
   if (!response.ok) {
-    throw new Error(data?.error ?? "Failed to fetch competitors");
+    throw new Error(formatApiError(data));
   }
 
   return data;
 };
 
 export const fetchContentList = async (): Promise<ContentListResponse> => {
-  const response = await fetch(Endpoint.CONTENT_LOCAL || Endpoint.CONTENT, {
+  const response = await fetch(Endpoint.CONTENT, {
     cache: "no-store",
   });
 
-  const data = await response.json();
+  const data = await parseJsonResponse<
+    ContentListResponse & { error?: string; detail?: unknown }
+  >(response);
 
   if (!response.ok) {
-    throw new Error(data?.error ?? "Failed to fetch content");
+    throw new Error(formatApiError(data));
+  }
+
+  return data;
+};
+
+export const fetchHashtagList = async (): Promise<HashtagListResponse> => {
+  const response = await fetch(Endpoint.HASHTAGS, {
+    cache: "no-store",
+  });
+
+  const data = await parseJsonResponse<
+    HashtagListResponse & { error?: string; detail?: unknown }
+  >(response);
+
+  if (!response.ok) {
+    throw new Error(formatApiError(data));
   }
 
   return data;

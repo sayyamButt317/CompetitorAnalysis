@@ -5,6 +5,7 @@ export const Endpoint = {
   COMPETITORANALYSISAPI: `${BASE_URL}/competitor-analysis/analyze`,
   COMPETITORS: `${BASE_URL}/competitor-analysis/competitors`,
   CONTENT: `${BASE_URL}/competitor-analysis/content`,
-  CONTENT_LOCAL: `${BASE_URL}/competitor-analysis/content`,
-  HASHTAG: `${BASE_URL}/competitor-analysis/hashtag`,
+  CONTENT_LOCAL: `${LOCAL_URL}/competitor-analysis/content`,
+  HASHTAGS: `${BASE_URL}/competitor-analysis/hashtags`,
+  HASHTAGS_LOCAL: `${LOCAL_URL}/competitor-analysis/hashtags`,
 }

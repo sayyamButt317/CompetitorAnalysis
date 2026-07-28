@@ -1,9 +1,5 @@
-import React from 'react'
+import { HashtagPageClient } from "@/components/hashtag/HashtagPageClient";
 
 export default function HashtagPage() {
-  return (
-    <div>
-      <h1>Hashtag</h1>
-    </div>
-  );
+  return <HashtagPageClient />;
 }

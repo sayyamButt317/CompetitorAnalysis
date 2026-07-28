@@ -1,8 +1,9 @@
 import { Endpoint } from "@/routes/endpoint";
+import { parseJsonResponse } from "@/lib/parse-json-response";
 
 async function fetchContentFrom(url: string) {
   const response = await fetch(url, { cache: "no-store" });
-  const data = await response.json();
+  const data = await parseJsonResponse<{ error?: string }>(response);
   return { response, data };
 }
 
