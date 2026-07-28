@@ -1,10 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { HashtagView } from "@/components/hashtag/HashtagView";
+import { DashboardView } from "@/components/dashboard/DashboardView";
+import { PageStatusShell } from "@/components/layout/PageStatusShell";
 import { mapHashtagListToPage } from "@/lib/map-hashtag-list";
 import { fetchContentList, fetchHashtagList } from "@/routes/route";
 import type { HashtagPageData } from "@/types/hashtag";
+import { DashboardData } from "@/types/dashboard";
 
 export function HashtagPageClient() {
   const [data, setData] = useState<HashtagPageData | null>(null);
@@ -44,18 +46,18 @@ export function HashtagPageClient() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-100">
+      <PageStatusShell activeId="hashtags">
         <div className="text-center">
           <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
           <p className="text-sm text-slate-500">Loading hashtags...</p>
         </div>
-      </div>
+      </PageStatusShell>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-100 p-6">
+      <PageStatusShell activeId="hashtags">
         <div className="max-w-md rounded-xl border border-red-200 bg-white p-6 text-center shadow-sm">
           <p className="text-sm text-red-600">{error ?? "Failed to load data"}</p>
           <button
@@ -66,9 +68,9 @@ export function HashtagPageClient() {
             Retry
           </button>
         </div>
-      </div>
+      </PageStatusShell>
     );
   }
 
-  return <HashtagView data={data} onRefresh={() => void loadHashtags()} />;
+  return <DashboardView data={data as unknown as DashboardData} embedded={true} />;
 }

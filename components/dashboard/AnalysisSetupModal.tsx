@@ -41,6 +41,7 @@ export function AnalysisSetupModal({
   return (
     <Modal
       open={open}
+      scoped
       title="Start Competitor Analysis"
       description="Enter your company details and target region. Optionally add specific competitor handles."
     >

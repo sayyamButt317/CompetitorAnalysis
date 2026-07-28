@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ContentView } from "@/components/content/ContentView";
+import { PageStatusShell } from "@/components/layout/PageStatusShell";
 import { mapContentListToPage } from "@/lib/map-content-list";
 import { fetchContentList } from "@/routes/route";
 import type { ContentPageData } from "@/types/content";
@@ -34,18 +35,18 @@ export function ContentPageClient() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-100">
+      <PageStatusShell activeId="content">
         <div className="text-center">
           <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
           <p className="text-sm text-slate-500">Loading content...</p>
         </div>
-      </div>
+      </PageStatusShell>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-100 p-6">
+      <PageStatusShell activeId="content">
         <div className="max-w-md rounded-xl border border-red-200 bg-white p-6 text-center shadow-sm">
           <p className="text-sm text-red-600">{error ?? "Failed to load data"}</p>
           <button
@@ -56,7 +57,7 @@ export function ContentPageClient() {
             Retry
           </button>
         </div>
-      </div>
+      </PageStatusShell>
     );
   }
 

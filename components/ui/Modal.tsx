@@ -7,6 +7,7 @@ interface ModalProps {
   description?: string;
   onClose?: () => void;
   closable?: boolean;
+  scoped?: boolean;
 }
 
 export function Modal({
@@ -16,11 +17,14 @@ export function Modal({
   description,
   onClose,
   closable = false,
+  scoped = false,
 }: ModalProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div
+      className={`${scoped ? "absolute" : "fixed"} inset-0 z-50 flex items-center justify-center p-4`}
+    >
       <div
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
         onClick={closable ? onClose : undefined}

@@ -17,11 +17,12 @@ import type { DashboardData } from "@/types/dashboard";
 
 interface DashboardViewProps {
   data: DashboardData;
+  embedded?: boolean;
 }
 
-export function DashboardView({ data }: DashboardViewProps) {
-  return (
-    <DashboardLayout navItems={getNavItems("overview")} company={data.company}>
+export function DashboardView({ data, embedded = false }: DashboardViewProps) {
+  const content = (
+    <>
       <DashboardHeader
         title="Competitor Analysis"
         subtitle={data.company.subtitle}
@@ -89,6 +90,16 @@ export function DashboardView({ data }: DashboardViewProps) {
           <TopPerformingPosts groups={data.competitorPosts} />
         </Card>
       </div>
+    </>
+  );
+
+  if (embedded) {
+    return content;
+  }
+
+  return (
+    <DashboardLayout navItems={getNavItems("overview")} company={data.company}>
+      {content}
     </DashboardLayout>
   );
 }
