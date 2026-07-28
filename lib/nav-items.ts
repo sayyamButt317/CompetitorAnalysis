@@ -5,7 +5,6 @@ const baseNavItems: Omit<NavItem, "active">[] = [
   { id: "competitors", label: "Competitors", href: "/competitors" },
   { id: "content", label: "Content", href: "/content" },
   { id: "analytics", label: "Analytics", href: "#" },
-  { id: "posts", label: "Posts", href: "#" },
   { id: "hashtags", label: "Hashtags", href: "/hashtag" },
   { id: "themes", label: "Themes", href: "#" },
   { id: "reports", label: "Reports", href: "#" },
