@@ -1,12 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { DashboardView } from "@/components/dashboard/DashboardView";
+import { HashtagView } from "@/components/hashtag/HashtagView";
 import { PageStatusShell } from "@/components/layout/PageStatusShell";
 import { mapHashtagListToPage } from "@/lib/map-hashtag-list";
 import { fetchContentList, fetchHashtagList } from "@/routes/route";
 import type { HashtagPageData } from "@/types/hashtag";
-import { DashboardData } from "@/types/dashboard";
 
 export function HashtagPageClient() {
   const [data, setData] = useState<HashtagPageData | null>(null);
@@ -72,5 +71,5 @@ export function HashtagPageClient() {
     );
   }
 
-  return <DashboardView data={data as unknown as DashboardData} embedded={true} />;
+  return <HashtagView data={data} onRefresh={() => void loadHashtags()} />;
 }
