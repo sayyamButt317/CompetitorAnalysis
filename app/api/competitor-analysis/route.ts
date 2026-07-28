@@ -1,10 +1,10 @@
 import type { NextRequest } from "next/server";
-import { COMPETITORANALYSISAPI } from "@/routes/endpoint";
+import { Endpoint } from "@/routes/endpoint";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
 
-  const response = await fetch(COMPETITORANALYSISAPI, {
+  const response = await fetch(Endpoint.COMPETITORANALYSISAPI, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
