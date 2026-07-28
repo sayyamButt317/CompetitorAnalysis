@@ -35,7 +35,7 @@ export function DashboardPage() {
   return (
     <>
       {!data && (
-        <div className="flex min-h-screen items-center justify-center bg-slate-100">
+        <div className="flex h-screen items-center justify-center bg-slate-100">
           <div className="text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600 text-lg font-bold text-white">
               Tr

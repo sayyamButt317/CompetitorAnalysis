@@ -97,7 +97,7 @@ export function TopPerformingPosts({ groups }: TopPerformingPostsProps) {
               </p>
             </div>
           </div>
-          <div className="flex gap-4 overflow-x-auto pb-2">
+          <div className="flex gap-4 overflow-x-auto pb-2 [transform:translateZ(0)] [backface-visibility:hidden]">
             {group.posts.map((post) => (
               <SocialPostCard key={post.id} post={post} />
             ))}

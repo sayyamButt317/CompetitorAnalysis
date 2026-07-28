@@ -10,9 +10,11 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children, navItems, company }: DashboardLayoutProps) {
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="flex h-screen overflow-hidden bg-slate-100">
       <Sidebar items={navItems} company={company} />
-      <main className="flex-1 overflow-y-auto">{children}</main>
+      <main className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
+        {children}
+      </main>
     </div>
   );
 }

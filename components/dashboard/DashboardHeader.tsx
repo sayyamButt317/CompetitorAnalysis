@@ -9,7 +9,7 @@ interface DashboardHeaderProps {
 export function DashboardHeader({ title, subtitle, lastUpdated }: DashboardHeaderProps) {
   return (
     <header className="flex flex-col gap-4 border-b border-slate-200/80 bg-white px-8 py-5 sm:flex-row sm:items-center sm:justify-between">
-      <div>
+      {/* <div>
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-bold text-slate-900">{title}</h1>
           <button
@@ -40,7 +40,7 @@ export function DashboardHeader({ title, subtitle, lastUpdated }: DashboardHeade
             Download CSV
           </Button>
         </div>
-      </div>
+      </div> */}
     </header>
   );
 }

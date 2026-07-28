@@ -30,8 +30,8 @@ export function VideoPlayer({
       loop={loop}
       autoPlay={autoPlay}
       playsInline={playsInline}
-      preload="metadata"
-      className={`bg-black ${className}`}
+      preload={autoPlay ? "auto" : "metadata"}
+      className={`bg-black object-cover ${className}`}
     />
   );
 }

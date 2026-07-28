@@ -57,7 +57,7 @@ interface SidebarProps {
 
 export function Sidebar({ items, company }: SidebarProps) {
   return (
-    <aside className="flex w-56 shrink-0 flex-col bg-[#1a1f36] text-slate-300">
+    <aside className="sticky top-0 flex h-screen w-56 shrink-0 flex-col overflow-y-auto bg-[#1a1f36] text-slate-300">
       <div className="flex items-center gap-2.5 px-5 py-5">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
           {company.logoInitials}
