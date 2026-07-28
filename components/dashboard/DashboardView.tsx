@@ -12,7 +12,7 @@ import { HashtagList } from "@/components/lists/HashtagList";
 import { TrendingTopics } from "@/components/lists/TrendingTopics";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { StatCardGrid } from "@/components/ui/StatCard";
-import { navItems } from "@/data/mock-dashboard";
+import { getNavItems } from "@/lib/nav-items";
 import type { DashboardData } from "@/types/dashboard";
 
 interface DashboardViewProps {
@@ -21,7 +21,7 @@ interface DashboardViewProps {
 
 export function DashboardView({ data }: DashboardViewProps) {
   return (
-    <DashboardLayout navItems={navItems} company={data.company}>
+    <DashboardLayout navItems={getNavItems("overview")} company={data.company}>
       <DashboardHeader
         title="Competitor Analysis"
         subtitle={data.company.subtitle}

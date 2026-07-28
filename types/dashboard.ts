@@ -21,6 +21,7 @@ export interface CompetitorRow {
   avgEngagement: number;
   posts: number;
   growth: number;
+  imageUrl?: string;
 }
 
 export interface ChartSegment {

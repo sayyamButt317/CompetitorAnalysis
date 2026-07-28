@@ -18,7 +18,7 @@ const columns: Column<CompetitorRow>[] = [
     header: "Account",
     render: (row) => (
       <div className="flex items-center gap-2.5">
-        <Avatar name={row.name} size="sm" />
+        <Avatar name={row.name} imageUrl={row.imageUrl} size="sm" />
         <span className="font-medium text-slate-800">{row.handle}</span>
       </div>
     ),

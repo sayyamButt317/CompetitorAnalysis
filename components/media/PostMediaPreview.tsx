@@ -13,6 +13,7 @@ interface PostMediaPreviewProps {
   thumbnailUrl?: string;
   permalink?: string;
   typeIcon: React.ReactNode;
+  containerClassName?: string;
 }
 
 export function PostMediaPreview({
@@ -23,13 +24,14 @@ export function PostMediaPreview({
   thumbnailUrl,
   permalink,
   typeIcon,
+  containerClassName = "mx-3 mt-2 h-28 w-[calc(100%-1.5rem)]",
 }: PostMediaPreviewProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const media = resolveMediaSource(mediaUrl, thumbnailUrl, type);
 
   if (!media) {
     return (
-      <div className={`relative mx-3 mt-2 flex h-28 items-end rounded-lg bg-gradient-to-br ${gradient} p-3`}>
+      <div className={`relative flex items-end rounded-lg bg-gradient-to-br ${gradient} p-3 ${containerClassName}`}>
         <p className="text-xs font-semibold leading-snug text-white">{title}</p>
         <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/30 text-white">
           {typeIcon}
@@ -50,7 +52,7 @@ export function PostMediaPreview({
       <button
         type="button"
         onClick={() => setLightboxOpen(true)}
-        className="group relative mx-3 mt-2 block h-28 w-[calc(100%-1.5rem)] overflow-hidden rounded-lg bg-slate-900 text-left [transform:translateZ(0)]"
+        className={`group relative block overflow-hidden rounded-lg bg-slate-900 text-left [transform:translateZ(0)] ${containerClassName}`}
         aria-label={`View ${media.kind}: ${title}`}
       >
         {previewSrc ? (

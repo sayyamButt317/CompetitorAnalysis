@@ -1,5 +1,6 @@
 interface AvatarProps {
   name: string;
+  imageUrl?: string;
   size?: "sm" | "md" | "lg";
   className?: string;
 }
@@ -24,13 +25,24 @@ function getColor(name: string): string {
   return colors[index];
 }
 
-export function Avatar({ name, size = "md", className = "" }: AvatarProps) {
+export function Avatar({ name, imageUrl, size = "md", className = "" }: AvatarProps) {
   const initials = name
     .split(" ")
     .map((w) => w[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
+
+  if (imageUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={imageUrl}
+        alt={name}
+        className={`shrink-0 rounded-full object-cover ${sizeMap[size]} ${className}`}
+      />
+    );
+  }
 
   return (
     <div

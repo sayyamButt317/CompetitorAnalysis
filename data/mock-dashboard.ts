@@ -1,16 +1,6 @@
 import type { DashboardData, NavItem } from "@/types/dashboard";
 
-export const navItems: NavItem[] = [
-  { id: "overview", label: "Overview", href: "#", active: true },
-  { id: "competitors", label: "Competitors", href: "#" },
-  { id: "content", label: "Content", href: "#" },
-  { id: "analytics", label: "Analytics", href: "#" },
-  { id: "posts", label: "Posts", href: "#" },
-  { id: "hashtags", label: "Hashtags", href: "#" },
-  { id: "themes", label: "Themes", href: "#" },
-  { id: "reports", label: "Reports", href: "#" },
-  { id: "settings", label: "Settings", href: "#" },
-];
+export { getNavItems, navItems } from "@/lib/nav-items";
 
 export const dashboardData: DashboardData = {
   company: {
