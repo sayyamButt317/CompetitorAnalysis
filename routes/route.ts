@@ -2,6 +2,7 @@ import type { CompetitorAnalysisRequest, CompetitorAnalysisResponse } from "@/ty
 import type { CompetitorsListResponse } from "@/types/competitors";
 import type { ContentListResponse } from "@/types/content";
 import type { HashtagListResponse } from "@/types/hashtag";
+import type { GlobalTrendsResponse } from "@/types/trends";
 import { formatApiError } from "@/lib/format-api-error";
 import { parseJsonResponse } from "@/lib/parse-json-response";
 import { Endpoint } from "./endpoint";
@@ -67,6 +68,23 @@ export const fetchHashtagList = async (): Promise<HashtagListResponse> => {
 
   const data = await parseJsonResponse<
     HashtagListResponse & { error?: string; detail?: unknown }
+  >(response);
+
+  if (!response.ok) {
+    throw new Error(formatApiError(data));
+  }
+
+  return data;
+};
+
+
+export const fetchGlobalTrends = async (): Promise<GlobalTrendsResponse> => {
+  const response = await fetch(Endpoint.GLOBALTRENDS, {
+    cache: "no-store",
+  });
+
+  const data = await parseJsonResponse<
+    GlobalTrendsResponse & { error?: string; detail?: unknown }
   >(response);
 
   if (!response.ok) {

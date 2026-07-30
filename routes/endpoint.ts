@@ -8,4 +8,6 @@ export const Endpoint = {
   CONTENT_LOCAL: `${LOCAL_URL}/competitor-analysis/content`,
   HASHTAGS: `${BASE_URL}/competitor-analysis/hashtags`,
   HASHTAGS_LOCAL: `${LOCAL_URL}/competitor-analysis/hashtags`,
+  GLOBALTRENDS: `${BASE_URL}/trend-analysis/today`,
+  NICHE_TRENDS: `${BASE_URL}/trend-analysis/discover`,
 }

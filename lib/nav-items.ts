@@ -5,6 +5,7 @@ const baseNavItems: Omit<NavItem, "active">[] = [
   { id: "competitors", label: "Competitors", href: "/competitors" },
   { id: "content", label: "Content", href: "/content" },
   { id: "hashtags", label: "Hashtags", href: "/hashtag" },
+  { id: "trends", label: "Trends", href: "/trend" },
 ];
 
 export function getNavItems(activeId: string): NavItem[] {
