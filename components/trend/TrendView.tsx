@@ -12,32 +12,38 @@ import {
 import { TrendGoogleCards } from "@/components/trend/TrendGoogleCards";
 import { TrendHeader } from "@/components/trend/TrendHeader";
 import { TrendInsightsPanel } from "@/components/trend/TrendInsightsPanel";
+import { TrendPlatformSections } from "@/components/trend/TrendPlatformSections";
 import { TrendRankedList } from "@/components/trend/TrendRankedList";
-import { TrendSourcesPanel } from "@/components/trend/TrendSourcesPanel";
 import { TrendStatCards } from "@/components/trend/TrendStatCards";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { exportTrendsToCsv } from "@/lib/trend-export";
 import { getNavItems } from "@/lib/nav-items";
-import type { TrendsPageData } from "@/types/trends";
+import type { PlatformId, TrendsPageData } from "@/types/trends";
+
+const SOCIAL_PLATFORMS: PlatformId[] = ["reddit", "x", "facebook", "linkedin"];
 
 interface TrendViewProps {
   data: TrendsPageData;
   onRefresh?: () => void;
+  navActiveId?: string;
 }
 
-export function TrendView({ data, onRefresh }: TrendViewProps) {
+export function TrendView({ data, onRefresh, navActiveId = "trends" }: TrendViewProps) {
+  const socialSections = data.platformSections.filter((section) =>
+    SOCIAL_PLATFORMS.includes(section.id),
+  );
+
   return (
-    <DashboardLayout navItems={getNavItems("trends")} company={data.company}>
+    <DashboardLayout navItems={getNavItems(navActiveId)} company={data.company}>
       <TrendHeader
         lastUpdated={data.lastUpdated}
         sourceCount={data.sourceCount}
+        onRefresh={onRefresh}
         onExport={() => exportTrendsToCsv(data)}
       />
 
       <div className="space-y-5 p-6 lg:p-8">
         <TrendStatCards metrics={data.stats} />
-
-        <TrendSourcesPanel sources={data.webSources} sourceCount={data.sourceCount} />
 
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-4">
           <TrendRankedList
@@ -50,7 +56,6 @@ export function TrendView({ data, onRefresh }: TrendViewProps) {
             items={data.topics}
             metricLabel="score"
             showSparkline={false}
-            linkLabel="View Insights"
           />
           <TrendRankedList
             title="Trending Reel Formats"
@@ -65,6 +70,8 @@ export function TrendView({ data, onRefresh }: TrendViewProps) {
           />
         </div>
 
+        <TrendPlatformSections sections={socialSections} />
+
         <TrendGoogleCards items={data.googleTrends} />
 
         <TrendAllScoresList items={data.allTrendScores} />
@@ -76,18 +83,6 @@ export function TrendView({ data, onRefresh }: TrendViewProps) {
         </div>
 
         <TrendPlatformBreakdown platforms={data.platformBreakdown} />
-
-        {onRefresh && (
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={onRefresh}
-              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              Refresh data
-            </button>
-          </div>
-        )}
       </div>
     </DashboardLayout>
   );

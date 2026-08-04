@@ -1,35 +1,53 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { PageStatusShell } from "@/components/layout/PageStatusShell";
+import { TrendSubNavBar } from "@/components/trend/TrendPageShell";
 import { TrendView } from "@/components/trend/TrendView";
 import { mapGlobalTrendsToPage } from "@/lib/map-global-trends";
 import { fetchGlobalTrends } from "@/routes/route";
-import type { TrendsPageData } from "@/types/trends";
+import type { GlobalTrendsResponse, TrendsPageData } from "@/types/trends";
+
+function hasTrendPayload(response: GlobalTrendsResponse): boolean {
+  return Boolean(
+    response.success ||
+      response.trending_hashtags?.length ||
+      response.source_breakdown?.length ||
+      response.web_trends?.source_breakdown?.length ||
+      response.trend_scores?.length,
+  );
+}
 
 export function TrendPageClient() {
+  const searchParams = useSearchParams();
+  const trendId = searchParams.get("trend_id") ?? undefined;
   const [data, setData] = useState<TrendsPageData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMessage, setLoadingMessage] = useState("Loading trending intelligence...");
   const [error, setError] = useState<string | null>(null);
 
   const loadTrends = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setLoadingMessage(
+      trendId
+        ? "Loading saved trend run..."
+        : "Loading trends and social platform data (Reddit, X, LinkedIn)...",
+    );
 
     try {
-      const response = await fetchGlobalTrends();
-
-      if (!response.success && !response.trending_hashtags?.length) {
+      const response = await fetchGlobalTrends({ trendId });
+      if (!hasTrendPayload(response)) {
         throw new Error(response.error ?? "No trend data available");
       }
-
       setData(mapGlobalTrendsToPage(response));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [trendId]);
 
   useEffect(() => {
     void loadTrends();
@@ -40,7 +58,7 @@ export function TrendPageClient() {
       <PageStatusShell activeId="trends">
         <div className="text-center">
           <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
-          <p className="text-sm text-slate-500">Loading trending intelligence...</p>
+          <p className="text-sm text-slate-500">{loadingMessage}</p>
         </div>
       </PageStatusShell>
     );
@@ -63,5 +81,10 @@ export function TrendPageClient() {
     );
   }
 
-  return <TrendView data={data} onRefresh={() => void loadTrends()} />;
+  return (
+    <div>
+      <TrendSubNavBar />
+      <TrendView data={data} onRefresh={() => void loadTrends()} />
+    </div>
+  );
 }

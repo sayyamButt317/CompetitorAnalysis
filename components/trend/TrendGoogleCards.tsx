@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/Card";
+import { SourceLink } from "@/components/trend/PlatformIcon";
 import type { TrendGoogleCard } from "@/types/trends";
 
 interface TrendGoogleCardsProps {
@@ -11,7 +12,7 @@ export function TrendGoogleCards({ items }: TrendGoogleCardsProps) {
   return (
     <section>
       <h3 className="mb-3 text-sm font-semibold text-slate-900">Google Trends</h3>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         {items.map((item) => (
           <Card key={`${item.title}-${item.rank}`} className="flex flex-col gap-3">
             <div className="flex items-start justify-between gap-2">
@@ -23,10 +24,24 @@ export function TrendGoogleCards({ items }: TrendGoogleCardsProps) {
               </span>
             </div>
             <div>
-              <p className="line-clamp-2 text-sm font-semibold text-slate-900">{item.title}</p>
+              {item.exploreUrl ? (
+                <a
+                  href={item.exploreUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="line-clamp-2 text-sm font-semibold text-slate-900 hover:text-indigo-600"
+                >
+                  {item.title}
+                </a>
+              ) : (
+                <p className="line-clamp-2 text-sm font-semibold text-slate-900">{item.title}</p>
+              )}
               <p className="mt-1 text-xs text-slate-500">
                 {item.traffic} traffic · {item.timeAgo}
               </p>
+              {item.exploreUrl && (
+                <SourceLink label="Verify on Google Trends" url={item.exploreUrl} className="mt-1" />
+              )}
             </div>
             {item.newsTitle && (
               <div className="mt-auto rounded-lg border border-slate-100 bg-slate-50 p-2.5">
@@ -46,7 +61,7 @@ export function TrendGoogleCards({ items }: TrendGoogleCardsProps) {
                   <p className="mt-1 line-clamp-2 text-xs text-slate-600">{item.newsTitle}</p>
                 )}
                 {item.newsSource && (
-                  <p className="mt-1 text-[10px] text-slate-400">{item.newsSource}</p>
+                  <SourceLink label={item.newsSource} url={item.newsUrl} className="mt-1" />
                 )}
               </div>
             )}

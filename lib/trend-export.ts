@@ -1,47 +1,37 @@
 import type { TrendsPageData } from "@/types/trends";
 
 export function exportTrendsToCsv(data: TrendsPageData): void {
-  const rows: string[][] = [
-    ["Category", "Rank", "Label", "Metric", "Trend Score"],
-    ...data.hashtags.map((item) => [
-      "Hashtag",
-      String(item.rank),
-      item.displayLabel,
-      item.metric,
-      String(item.trendScore),
+  const csvRows: string[][] = [
+    ["Rank", "Title", "Type", "Metric", "Source", "Verify URL"],
+    ...data.allTrendScores.map((row) => [
+      String(row.rank),
+      row.displayLabel,
+      row.typeLabel ?? "",
+      row.metric,
+      row.sourceName ?? "",
+      row.verifyUrl ?? row.sourceUrl ?? "",
     ]),
-    ...data.topics.map((item) => [
-      "Topic",
-      String(item.rank),
-      item.displayLabel,
-      item.metric,
-      String(item.trendScore),
-    ]),
-    ...data.reelFormats.map((item) => [
-      "Reel Format",
-      String(item.rank),
-      item.displayLabel,
-      item.metric,
-      String(item.trendScore),
-    ]),
-    ...data.allTrendScores.map((item) => [
-      "Trend Score",
-      String(item.rank),
-      item.displayLabel,
-      item.sublabel ?? "",
-      item.metric,
-    ]),
-    ...data.googleTrends.map((item) => [
+    ...data.googleTrends.map((row) => [
+      String(row.rank),
+      row.title,
       "Google Trend",
-      String(item.rank),
-      item.title,
-      item.traffic,
-      item.country,
+      row.traffic,
+      row.country,
+      row.exploreUrl ?? row.newsUrl ?? "",
     ]),
-    ...data.webSources.map((source) => ["Source", "", source.name, source.category, ""]),
+    ...data.platformSections.flatMap((section) =>
+      section.items.map((item, i) => [
+        String(i + 1),
+        item.title,
+        item.type,
+        item.metric ?? "",
+        `${section.label} · ${item.source}`,
+        item.url ?? "",
+      ]),
+    ),
   ];
 
-  const csv = rows
+  const csv = csvRows
     .map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(","))
     .join("\n");
 
@@ -49,7 +39,7 @@ export function exportTrendsToCsv(data: TrendsPageData): void {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `trending-intelligence-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.download = `trends-${new Date().toISOString().slice(0, 10)}.csv`;
   link.click();
   URL.revokeObjectURL(url);
 }

@@ -55,9 +55,24 @@ export function TrendPlatformBreakdown({ platforms }: TrendPlatformBreakdownProp
       <ul className="space-y-4">
         {platforms.map((platform) => (
           <li key={platform.platform}>
-            <div className="mb-1.5 flex items-center justify-between">
-              <span className="text-sm font-medium text-slate-700">{platform.platform}</span>
-              <span className="text-xs font-semibold text-slate-500">{platform.percentage}%</span>
+            <div className="mb-1.5 flex items-center justify-between gap-2">
+              {platform.url ? (
+                <a
+                  href={platform.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="truncate text-sm font-medium text-indigo-600 hover:underline"
+                >
+                  {platform.platform}
+                </a>
+              ) : (
+                <span className="truncate text-sm font-medium text-slate-700">
+                  {platform.platform}
+                </span>
+              )}
+              <span className="shrink-0 text-xs font-semibold text-slate-500">
+                {platform.percentage}%
+              </span>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-slate-100">
               <div
