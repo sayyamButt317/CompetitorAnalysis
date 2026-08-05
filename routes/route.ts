@@ -3,6 +3,7 @@ import type {
   CompetitorAnalysisJobPollResponse,
   CompetitorAnalysisRequest,
   CompetitorAnalysisResponse,
+  CompetitorAnalysisResultsAllResponse,
   CompetitorAnalysisResultsResponse,
 } from "@/types/api";
 import type { CompetitorsListResponse } from "@/types/competitors";
@@ -351,6 +352,51 @@ export const fetchTrendScores = async (
   >(response);
   if (!response.ok) throw new Error(formatApiError(data));
   return data;
+};
+
+
+export const fetchCompetitorAnalysisResultsAll = async (): Promise<CompetitorAnalysisResultsAllResponse> => {
+  const response = await fetch(Endpoint.COMPETITORANALYSISRESULTSALL, {
+    cache: "no-store",
+  });
+  const data = await parseJsonResponse<
+    CompetitorAnalysisResultsAllResponse & { error?: string; detail?: unknown }
+  >(response);
+  if (!response.ok) throw new Error(formatApiError(data));
+  return data;
+};
+
+export const fetchCompetitorAnalysisResultsById = async (
+  analysisId: string,
+): Promise<CompetitorAnalysisResultsResponse> => {
+  const response = await fetch(Endpoint.COMPETITORANALYSISRESULTSBYID(analysisId), {
+    cache: "no-store",
+  });
+  const data = await parseJsonResponse<
+    CompetitorAnalysisResultsResponse & { error?: string; detail?: unknown }
+  >(response);
+  if (!response.ok) throw new Error(formatApiError(data));
+  return data;
+};
+
+
+export const deleteCompetitorAnalysisResultsById = async (analysisId: string): Promise<void> => {
+  const response = await fetch(Endpoint.DETAILCOMPETITORANALYSISRESULTSALLBYID(analysisId), {
+    method: "DELETE",
+  });
+
+  if (response.status === 204 || response.status === 205) return;
+
+  const text = await response.text();
+  if (!response.ok) {
+    let payload: { error?: string; detail?: unknown } = {};
+    try {
+      payload = text ? (JSON.parse(text) as { error?: string; detail?: unknown }) : {};
+    } catch {
+      payload = { error: text || "Failed to delete analysis" };
+    }
+    throw new Error(formatApiError(payload));
+  }
 };
 
 // Backward-compatible aliases

@@ -20,6 +20,10 @@ export const Endpoint = {
     `${BASE_URL}/competitor-analysis/results/${encodeURIComponent(analysisId)}`,
   COMPETITORANALYSISRESULTS: `${BASE_URL}/competitor-analysis/results`,
 
+  COMPETITORANALYSISRESULTSALL: `${BASE_URL}/competitor-analysis/results/all`,
+  DETAILCOMPETITORANALYSISRESULTSALLBYID: (analysisId: string) =>
+    `${BASE_URL}/competitor-analysis/results/${encodeURIComponent(analysisId)}`,
+
   CONTENT: `${BASE_URL}/competitor-analysis/content`,
   CONTENT_LOCAL: `${LOCAL_URL}/competitor-analysis/content`,
   HASHTAGS: `${BASE_URL}/competitor-analysis/hashtags`,

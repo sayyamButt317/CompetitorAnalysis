@@ -28,9 +28,9 @@ export function CompetitorsDetailTable({ competitors }: CompetitorsDetailTablePr
             </tr>
           </thead>
           <tbody>
-            {competitors.map((row) => (
+            {competitors.map((row, index) => (
               <tr
-                key={row.username}
+                key={`${row.username || row.name}-${index}`}
                 className="border-b border-slate-50 transition-colors last:border-0 hover:bg-slate-50/60"
               >
                 <td className="py-3 pr-4">

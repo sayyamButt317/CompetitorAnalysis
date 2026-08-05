@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ChartCard } from "@/components/charts/ChartCard";
 import { DonutChart } from "@/components/charts/DonutChart";
 import { Card, CardHeader } from "@/components/ui/Card";
@@ -149,11 +150,19 @@ export function CompanySocialCards({ instagram, linkedin }: CompanySocialCardsPr
 
             {linkedin.employees.length > 0 && (
               <div>
-                <p className="mb-2 text-xs font-semibold text-slate-500">Team Snapshot</p>
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <p className="text-xs font-semibold text-slate-500">Team Snapshot</p>
+                  <Link
+                    href="/employees"
+                    className="text-[11px] font-medium text-indigo-600 hover:text-indigo-700"
+                  >
+                    View all →
+                  </Link>
+                </div>
                 <ul className="space-y-1.5">
-                  {linkedin.employees.map((employee) => (
+                  {linkedin.employees.map((employee, index) => (
                     <li
-                      key={`${employee.name}-${employee.designation}`}
+                      key={`${employee.name}-${employee.designation}-${index}`}
                       className="flex items-center justify-between gap-2 text-xs"
                     >
                       {employee.url ? (
@@ -169,6 +178,33 @@ export function CompanySocialCards({ instagram, linkedin }: CompanySocialCardsPr
                         <span className="font-medium text-slate-700">{employee.name}</span>
                       )}
                       <span className="truncate text-slate-400">{employee.designation}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {linkedin.jobOpenings.length > 0 && (
+              <div>
+                <p className="mb-2 text-xs font-semibold text-slate-500">Job Openings</p>
+                <ul className="space-y-2">
+                  {linkedin.jobOpenings.map((job) => (
+                    <li key={`${job.title}-${job.url ?? ""}`} className="text-xs">
+                      {job.url ? (
+                        <a
+                          href={job.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-medium text-indigo-600 hover:text-indigo-700"
+                        >
+                          {job.title}
+                        </a>
+                      ) : (
+                        <span className="font-medium text-slate-700">{job.title}</span>
+                      )}
+                      {job.location && (
+                        <p className="text-slate-400">{job.location}</p>
+                      )}
                     </li>
                   ))}
                 </ul>

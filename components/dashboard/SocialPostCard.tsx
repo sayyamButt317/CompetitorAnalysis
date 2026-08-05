@@ -86,8 +86,8 @@ export function TopPerformingPosts({ groups }: TopPerformingPostsProps) {
 
   return (
     <div className="space-y-6">
-      {groups.map((group) => (
-        <section key={group.handle}>
+      {groups.map((group, groupIndex) => (
+        <section key={`${group.handle}-${groupIndex}`}>
           <div className="mb-3 flex items-center gap-2.5">
             <Avatar name={group.name} size="sm" />
             <div>
@@ -98,8 +98,8 @@ export function TopPerformingPosts({ groups }: TopPerformingPostsProps) {
             </div>
           </div>
           <div className="flex gap-4 overflow-x-auto pb-2 [transform:translateZ(0)] [backface-visibility:hidden]">
-            {group.posts.map((post) => (
-              <SocialPostCard key={post.id} post={post} />
+            {group.posts.map((post, postIndex) => (
+              <SocialPostCard key={`${post.id}-${postIndex}`} post={post} />
             ))}
           </div>
         </section>

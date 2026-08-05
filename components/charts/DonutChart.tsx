@@ -43,9 +43,9 @@ export function DonutChart({
             stroke="#f1f5f9"
             strokeWidth="12"
           />
-          {slices.map((slice) => (
+          {slices.map((slice, index) => (
             <circle
-              key={slice.label}
+              key={`${slice.label}-${index}`}
               cx="50"
               cy="50"
               r={radius}
@@ -67,8 +67,8 @@ export function DonutChart({
       </div>
 
       <ul className="flex flex-1 flex-col gap-2">
-        {slices.map((slice) => (
-          <li key={slice.label} className="flex items-center justify-between gap-2 text-xs">
+        {slices.map((slice, index) => (
+          <li key={`${slice.label}-${index}`} className="flex items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-2 min-w-0">
               <span
                 className="h-2.5 w-2.5 shrink-0 rounded-full"

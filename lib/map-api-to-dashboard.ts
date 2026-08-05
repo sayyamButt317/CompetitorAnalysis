@@ -16,6 +16,7 @@ import type {
   DashboardData,
   GapAnalysisView,
   RecommendationItem,
+  SearchIntelligenceView,
   SimilarityRow,
   SocialPost,
   SwotView,
@@ -34,6 +35,21 @@ const CHART_COLORS = [
   "#94a3b8",
   "#e0e7ff",
 ];
+
+/** Safe Instagram-style handle; never returns "@null" for missing usernames. */
+function formatHandle(
+  username?: string | null,
+  fallbackName?: string | null,
+  index?: number,
+): string {
+  const clean = username?.trim();
+  if (clean && clean.toLowerCase() !== "null") {
+    return clean.startsWith("@") ? clean : `@${clean}`;
+  }
+  const name = fallbackName?.trim();
+  if (name) return name;
+  return `Competitor ${(index ?? 0) + 1}`;
+}
 
 const POST_GRADIENTS = [
   "from-indigo-600 to-purple-700",
@@ -269,11 +285,18 @@ function buildInsights(response: CompetitorAnalysisResponse): string[] {
   const fromUsage = contentUsage?.insights ?? [];
   const combined: string[] = [];
 
+  if (response.ai_report?.summary) combined.push(response.ai_report.summary);
   if (contentUsage?.summary) combined.push(contentUsage.summary);
   combined.push(...fromUsage);
 
-  if (response.gap_analysis?.summary) combined.push(response.gap_analysis.summary);
-  if (response.competitor_intelligence_report?.summary) {
+  if (response.gap_analysis && "summary" in response.gap_analysis && response.gap_analysis.summary) {
+    combined.push(response.gap_analysis.summary);
+  }
+  if (
+    response.competitor_intelligence_report &&
+    "summary" in response.competitor_intelligence_report &&
+    response.competitor_intelligence_report.summary
+  ) {
     combined.push(response.competitor_intelligence_report.summary);
   }
 
@@ -306,9 +329,10 @@ function mapToSocialPost(
   },
   index: number,
 ): SocialPost {
+  const handle = formatHandle(post.username, post.name, index);
   return {
-    id: `${post.username}-${post.id ?? index}`,
-    handle: `@${post.username}`,
+    id: `${handle}-${post.id ?? index}`,
+    handle,
     name: post.name ?? post.username ?? "Unknown",
     title: captionTitle(post.caption),
     type: normalizeMediaType(post.media_type),
@@ -329,7 +353,7 @@ function buildCompetitorPosts(
 ): CompetitorPostsGroup[] {
   return competitors
     .map((c, ci) => ({
-      handle: `@${c.username}`,
+      handle: formatHandle(c.username, c.name, ci),
       name: c.name ?? c.username ?? "Unknown",
       posts: [...(c.posts ?? [])]
         .sort((a, b) => (b.engagement_rate ?? 0) - (a.engagement_rate ?? 0))
@@ -370,19 +394,24 @@ const dna = response.company_social_analysis?.company_dna;
     niche: profile?.niche ?? response.company_social_analysis?.detected_niche,
     description:
       profile?.description ??
+      profile?.profile ??
       company?.extracted_signals?.summary ??
+      response.company_analysis?.description ??
       response.analysis?.company?.description,
     positioning:
       profile?.positioning ??
       response.company_social_analysis?.company_dna?.positioning ??
+      response.company_analysis?.positioning ??
       response.analysis?.company?.positioning,
     valueProposition:
       profile?.value_proposition ??
       response.company_social_analysis?.company_dna?.value_proposition ??
+      response.company_analysis?.value_proposition ??
       response.analysis?.company?.value_proposition,
     region:
       profile?.region ??
       response.filters_applied?.region ??
+      response.company_analysis?.region ??
       response.analysis?.company?.region,
     services:
       profile?.services ??
@@ -516,25 +545,62 @@ function buildCompanyLinkedIn(
 ): CompanyLinkedInView | undefined {
   const social = response.company_social_analysis?.user_linkedin;
   const analysisUser = response.analysis?.linkedin?.user;
-  const reportUser = response.competitor_intelligence_report?.linkedin_analysis?.user;
+  const reportUser = response.competitor_intelligence_report &&
+    "linkedin_analysis" in response.competitor_intelligence_report
+    ? response.competitor_intelligence_report.linkedin_analysis?.user
+    : undefined;
+  const companyAnalysisLi = response.company_analysis?.user_linkedin as
+    | ApiUserLinkedIn
+    | undefined;
+  const companyAnalysisNested = response.company_analysis?.linkedin_analysis;
 
-  // Prefer full social crawl; fall back to analysis/report even when crawl was skipped.
+  const enrichedSocial: ApiUserLinkedIn | undefined = social
+    ? {
+        ...social,
+        analysis: social.analysis ?? social.linkedin_analysis ?? companyAnalysisNested,
+        content_themes:
+          social.content_themes ??
+          social.linkedin_content_themes ??
+          companyAnalysisLi?.linkedin_content_themes,
+        employee_count:
+          social.employee_count ??
+          social.analysis?.employee_count ??
+          social.linkedin_analysis?.employee_count ??
+          (Array.isArray(social.employees) ? social.employees.length : null),
+        post_count:
+          social.post_count ??
+          social.analysis?.post_count ??
+          social.linkedin_analysis?.post_count ??
+          0,
+        is_hiring:
+          social.is_hiring ??
+          social.analysis?.is_hiring ??
+          social.linkedin_analysis?.is_hiring ??
+          null,
+      }
+    : undefined;
+
   const primary =
-    social && !social.skipped && hasLinkedInPayload(social)
-      ? social
-      : hasLinkedInPayload(analysisUser)
-        ? analysisUser
-        : hasLinkedInPayload(reportUser)
-          ? reportUser
-          : social && hasLinkedInPayload(social)
-            ? social
-            : undefined;
+    enrichedSocial && !enrichedSocial.skipped && hasLinkedInPayload(enrichedSocial)
+      ? enrichedSocial
+      : hasLinkedInPayload(companyAnalysisLi)
+        ? companyAnalysisLi
+        : hasLinkedInPayload(analysisUser)
+          ? analysisUser
+          : hasLinkedInPayload(reportUser)
+            ? reportUser
+            : enrichedSocial && hasLinkedInPayload(enrichedSocial)
+              ? enrichedSocial
+              : undefined;
 
   if (!primary) return undefined;
 
   const primaryUser = primary as ApiUserLinkedIn;
   const themes = asThemeList(
-    primary.content_themes ?? primaryUser.analysis?.content_themes ?? reportUser?.content_themes,
+    primary.content_themes ??
+      primaryUser.linkedin_content_themes ??
+      primaryUser.analysis?.content_themes ??
+      reportUser?.content_themes,
   );
 
   const url =
@@ -543,10 +609,19 @@ function buildCompanyLinkedIn(
     analysisUser?.linkedin_url ??
     response.company?.linkedin_url ??
     response.company_profile?.linkedin_url ??
+    response.company_analysis?.linkedin_url ??
     response.company_social_analysis?.social_handles?.linkedin_url ??
     undefined;
 
-  const employees = (primary.employees ?? social?.employees ?? reportUser?.employees ?? [])
+  const employees = (
+    primary.employees ??
+    social?.employees ??
+    (Array.isArray(response.company_analysis?.employees)
+      ? response.company_analysis.employees
+      : []) ??
+    reportUser?.employees ??
+    []
+  )
     .filter((e): e is typeof e & { name: string } => Boolean(e.name))
     .slice(0, 8)
     .map((e) => ({
@@ -555,10 +630,29 @@ function buildCompanyLinkedIn(
       url: e.linkedin_url,
     }));
 
+  const jobOpenings = (primaryUser.job_openings ?? social?.job_openings ?? [])
+    .slice(0, 5)
+    .map((job) => ({
+      title: job.job_title ?? "Open role",
+      location: job.location ?? undefined,
+      url: job.linkedin_url ?? undefined,
+      snippet: job.snippet,
+    }));
+
   const skipped = Boolean(
     (social?.skipped || analysisUser?.skipped || response.meta?.skip_linkedin) &&
-      !(social && !social.skipped && hasLinkedInPayload(social)),
+      !(enrichedSocial && !enrichedSocial.skipped && hasLinkedInPayload(enrichedSocial)),
   );
+
+  const employeeCount =
+    primary.employee_count ??
+    primaryUser.analysis?.employee_count ??
+    (typeof response.company_analysis?.employees === "number"
+      ? response.company_analysis.employees
+      : undefined) ??
+    reportUser?.employee_count ??
+    employees.length ??
+    0;
 
   return {
     url: url ?? undefined,
@@ -567,17 +661,14 @@ function buildCompanyLinkedIn(
       primaryUser.analysis?.post_count ??
       reportUser?.post_count ??
       0,
-    employeeCount:
-      primary.employee_count ??
-      primaryUser.analysis?.employee_count ??
-      reportUser?.employee_count ??
-      employees.length ??
-      0,
+    employeeCount,
     followers: primary.followers ?? reportUser?.followers ?? undefined,
     isHiring: Boolean(
       primaryUser.is_hiring ??
         primary.hiring ??
         primaryUser.analysis?.is_hiring ??
+        primaryUser.analysis?.active_hiring ??
+        response.company_analysis?.is_hiring ??
         reportUser?.hiring ??
         reportUser?.is_hiring,
     ),
@@ -586,13 +677,20 @@ function buildCompanyLinkedIn(
       primaryUser.analysis?.thought_leadership_score ??
       reportUser?.thought_leadership_score ??
       0,
-    industry: primary.industry ?? reportUser?.industry ?? undefined,
+    industry:
+      primary.industry ??
+      reportUser?.industry ??
+      response.company_profile?.industry ??
+      undefined,
     specialties: primary.specialties ?? reportUser?.specialties ?? [],
-    businessSignals: collectBusinessSignals(primary).length
-      ? collectBusinessSignals(primary)
-      : collectBusinessSignals(reportUser),
+    businessSignals: [
+      ...collectBusinessSignals(primary),
+      ...(primaryUser.analysis?.b2b_signals ?? []),
+      ...(primaryUser.hiring_signals ?? []).slice(0, 3),
+    ].filter((value, index, arr) => arr.indexOf(value) === index),
     themes,
     employees,
+    jobOpenings,
     warnings: [
       ...(primaryUser.warnings ?? []),
       ...(skipped
@@ -604,6 +702,35 @@ function buildCompanyLinkedIn(
         : []),
     ],
     skipped,
+  };
+}
+
+function buildSearchIntelligence(
+  response: CompetitorAnalysisResponse,
+): SearchIntelligenceView | undefined {
+  const intel = response.search_intelligence;
+  if (!intel) return undefined;
+
+  const hasAny =
+    (intel.search_keywords?.length ?? 0) +
+      (intel.search_queries?.length ?? 0) +
+      (intel.industry_terms?.length ?? 0) +
+      (intel.competitor_patterns?.length ?? 0) >
+    0;
+
+  if (!hasAny && !intel.company_name) return undefined;
+
+  return {
+    companyName: intel.company_name,
+    confidence: intel.confidence,
+    searchKeywords: intel.search_keywords ?? [],
+    searchQueries: intel.search_queries ?? [],
+    industryTerms: intel.industry_terms ?? [],
+    productTerms: intel.product_terms ?? [],
+    audienceTerms: intel.audience_terms ?? [],
+    competitorPatterns: intel.competitor_patterns ?? [],
+    alternativeNames: intel.alternative_names ?? [],
+    excludedTerms: intel.excluded_terms ?? [],
   };
 }
 
@@ -645,28 +772,61 @@ function buildCompetitorLinkedIn(
 
 function buildGapAnalysis(response: CompetitorAnalysisResponse): GapAnalysisView | undefined {
   const gaps = response.gap_analysis;
-  const reportGaps = response.competitor_intelligence_report?.gaps;
-  if (!gaps && !reportGaps) return undefined;
+  const report =
+    response.competitor_intelligence_report &&
+    "gaps" in response.competitor_intelligence_report
+      ? response.competitor_intelligence_report.gaps
+      : undefined;
+
+  const isEmptyObject =
+    gaps &&
+    typeof gaps === "object" &&
+    !Array.isArray(gaps) &&
+    Object.keys(gaps).length === 0;
+
+  if ((!gaps || isEmptyObject) && !report) return undefined;
+
+  const typedGaps = (isEmptyObject ? undefined : gaps) as
+    | import("@/types/api").ApiGapAnalysis
+    | undefined;
+
+  const serviceGaps = typedGaps?.service_gaps ?? report?.services ?? [];
+  const technologyGaps = typedGaps?.technology_gaps ?? report?.technologies ?? [];
+  const keywordGaps = typedGaps?.keyword_gaps ?? [];
+  const formats = typedGaps?.dominant_competitor_formats ?? [];
+  const themes = typedGaps?.dominant_competitor_themes ?? [];
+  const categories = typedGaps?.dominant_competitor_categories ?? [];
+
+  const hasAny =
+    serviceGaps.length +
+      technologyGaps.length +
+      keywordGaps.length +
+      formats.length +
+      themes.length +
+      categories.length >
+      0 || Boolean(typedGaps?.summary ?? report?.summary);
+
+  if (!hasAny) return undefined;
 
   return {
-    summary: gaps?.summary ?? reportGaps?.summary,
-    serviceGaps: gaps?.service_gaps ?? reportGaps?.services ?? [],
-    technologyGaps: gaps?.technology_gaps ?? reportGaps?.technologies ?? [],
-    keywordGaps: gaps?.keyword_gaps ?? [],
+    summary: typedGaps?.summary ?? report?.summary,
+    serviceGaps,
+    technologyGaps,
+    keywordGaps,
     formats: toSegments(
-      (gaps?.dominant_competitor_formats ?? []).map((item) => ({
+      formats.map((item) => ({
         label: item.format,
         value: item.count,
       })),
     ),
     themes: toSegments(
-      (gaps?.dominant_competitor_themes ?? []).map((item) => ({
+      themes.map((item) => ({
         label: item.theme,
         value: item.count,
       })),
     ),
     categories: toSegments(
-      (gaps?.dominant_competitor_categories ?? []).map((item) => ({
+      categories.map((item) => ({
         label: item.category,
         value: item.count,
       })),
@@ -675,10 +835,14 @@ function buildGapAnalysis(response: CompetitorAnalysisResponse): GapAnalysisView
 }
 
 function buildSimilarityScores(response: CompetitorAnalysisResponse): SimilarityRow[] {
+  const fromReport =
+    response.competitor_intelligence_report &&
+    "similarity_vs_competitors" in response.competitor_intelligence_report
+      ? response.competitor_intelligence_report.similarity_vs_competitors
+      : undefined;
+
   const source: ApiSimilarityScore[] =
-    response.similarity_scores ??
-    response.competitor_intelligence_report?.similarity_vs_competitors ??
-    [];
+    response.similarity_scores ?? fromReport ?? [];
 
   return source.map((item) => ({
     name: item.name ?? item.username ?? "Unknown",
@@ -794,17 +958,21 @@ export function mapApiResponseToDashboard(
   const companyName =
     response.company_profile?.name ??
     response.company?.name ??
+    response.company_analysis?.name ??
     response.company?.extracted_signals?.name ??
+    response.search_intelligence?.company_name ??
     "Your Company";
   const region = capitalize(
     response.filters_applied?.region ??
       response.company_profile?.region ??
+      response.company_analysis?.region ??
       request.region,
   );
   const service =
     response.company?.flagship_services?.[0] ??
     response.company_profile?.flagship_services?.[0] ??
     response.company_profile?.industry ??
+    response.company_analysis?.industry ??
     response.company?.extracted_signals?.flagship_services?.[0] ??
     response.company?.services?.[0] ??
     APP_COMPANY.name;
@@ -887,7 +1055,7 @@ export function mapApiResponseToDashboard(
     ],
     topCompetitors: ranked.slice(0, 5).map((c, i) => ({
       rank: i + 1,
-      handle: `@${c.username}`,
+      handle: formatHandle(c.username, c.name, i),
       name: c.name ?? c.username ?? "Unknown",
       followers: c.followers ?? 0,
       avgEngagement: c.content_strategy?.avg_engagement_rate ?? 0,
@@ -902,7 +1070,7 @@ export function mapApiResponseToDashboard(
     })),
     engagementShare: toSegments(
       ranked.slice(0, 5).map((c, i) => ({
-        label: `@${c.username}`,
+        label: formatHandle(c.username, c.name, i),
         value: Math.round((engagementWeights[i] / totalWeight) * 100),
       })),
     ),
@@ -913,8 +1081,8 @@ export function mapApiResponseToDashboard(
     hashtags: buildHashtags(response),
     trendingTopics: (response.market_insights?.topics ?? []).map((t) => t.topic),
     engagementTrend: engagementTrendByMonthFixed(ranked),
-    comparisonCompetitors: ranked.slice(0, 5).map((c) => ({
-      handle: `@${c.username}`,
+    comparisonCompetitors: ranked.slice(0, 5).map((c, i) => ({
+      handle: formatHandle(c.username, c.name, i),
       name: c.name ?? c.username ?? "Unknown",
     })),
     comparisonMetrics: buildComparisonMetrics(ranked.slice(0, 5)),
@@ -929,6 +1097,13 @@ export function mapApiResponseToDashboard(
     gapAnalysis: buildGapAnalysis(response),
     similarityScores: buildSimilarityScores(response),
     swot: buildSwot(response),
+    searchIntelligence: buildSearchIntelligence(response),
     discoveryReasoning: response.filters_applied?.reasoning,
+    analysisError: typeof response.error === "string" ? response.error : null,
+    discoveryWarnings: [
+      ...(response.discovery_warnings ?? []),
+      ...(response.filters_applied?.discovery_warnings ?? []),
+    ].filter((value, index, arr) => arr.indexOf(value) === index),
+    analysisSuccess: Boolean(response.success ?? response.meta?.success),
   };
 }

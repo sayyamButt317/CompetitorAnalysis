@@ -31,8 +31,8 @@ export function SimilarityScoresTable({ rows }: SimilarityScoresTableProps) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
-              <tr key={`${row.name}-${row.username ?? ""}`} className="border-b border-slate-50">
+            {rows.map((row, index) => (
+              <tr key={`${row.name}-${row.username ?? ""}-${index}`} className="border-b border-slate-50">
                 <td className="px-3 py-2.5">
                   <p className="font-medium text-slate-800">{row.name}</p>
                   {row.username && (

@@ -6,6 +6,7 @@ import { CompetitorLinkedInTable } from "@/components/dashboard/CompetitorLinked
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { GapAnalysisCard } from "@/components/dashboard/GapAnalysisCard";
 import { RecommendationsCard } from "@/components/dashboard/RecommendationsCard";
+import { SearchIntelligenceCard } from "@/components/dashboard/SearchIntelligenceCard";
 import { SimilarityScoresTable } from "@/components/dashboard/SimilarityScoresTable";
 import { TopPerformingPosts } from "@/components/dashboard/SocialPostCard";
 import { SwotGrid } from "@/components/dashboard/SwotGrid";
@@ -37,6 +38,23 @@ export function DashboardView({ data, embedded = false }: DashboardViewProps) {
       />
 
       <div className="space-y-5 p-6 lg:p-8">
+        {(data.analysisError || data.discoveryWarnings.length > 0) && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+            {!data.analysisSuccess && data.analysisError && (
+              <p className="text-sm font-medium text-amber-900">{data.analysisError}</p>
+            )}
+            {data.discoveryWarnings.length > 0 && (
+              <ul className="mt-1 space-y-1">
+                {data.discoveryWarnings.map((warning) => (
+                  <li key={warning} className="text-xs text-amber-800">
+                    {warning}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
         <StatCardGrid metrics={data.stats} />
 
         {data.companyProfile && (
@@ -50,6 +68,10 @@ export function DashboardView({ data, embedded = false }: DashboardViewProps) {
           instagram={data.companyInstagram}
           linkedin={data.companyLinkedIn}
         />
+
+        {data.searchIntelligence && (
+          <SearchIntelligenceCard data={data.searchIntelligence} />
+        )}
 
         <CompetitorLinkedInTable rows={data.competitorLinkedIn} />
 

@@ -19,8 +19,8 @@ export function CompetitorComparisonTable({
           <thead>
             <tr className="border-b border-slate-100">
               <th className="pb-3 pr-4 text-left font-medium text-slate-400">Metric</th>
-              {competitors.map((c) => (
-                <th key={c.handle} className="pb-3 px-2 text-center font-medium text-slate-400">
+              {competitors.map((c, index) => (
+                <th key={`${c.handle}-${index}`} className="pb-3 px-2 text-center font-medium text-slate-400">
                   <div className="flex flex-col items-center gap-1.5">
                     <Avatar name={c.name} size="sm" />
                     <span className="truncate max-w-[72px]">{c.handle}</span>

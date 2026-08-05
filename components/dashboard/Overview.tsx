@@ -2,27 +2,27 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AnalysisSetupModal } from "@/components/dashboard/AnalysisSetupModal";
-import { DashboardView } from "@/components/dashboard/DashboardView";
+import { OverviewView } from "@/components/overview/OverviewView";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/Button";
 import { CompanyLogo } from "@/components/ui/CompanyLogo";
 import { APP_COMPANY } from "@/lib/app-brand";
-import { mapApiResponseToDashboard } from "@/lib/map-api-to-dashboard";
+import { mapApiResponseToOverview } from "@/lib/map-api-to-overview";
 import { getNavItems } from "@/lib/nav-items";
 import {
   CompetitorAnalysisApi,
   fetchCompetitorAnalysisResults,
 } from "@/routes/route";
 import type { CompetitorAnalysisRequest } from "@/types/api";
-import type { DashboardData } from "@/types/dashboard";
+import type { OverviewPageData } from "@/types/overview";
 
 const defaultCompany = {
   name: APP_COMPANY.name,
   logoInitials: APP_COMPANY.logoInitials,
 };
 
-export function DashboardResultsPage() {
-  const [data, setData] = useState<DashboardData | null>(null);
+export function OverviewResultPage() {
+  const [data, setData] = useState<OverviewPageData | null>(null);
   const [loadingResults, setLoadingResults] = useState(true);
   const [resultsError, setResultsError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -38,19 +38,24 @@ export function DashboardResultsPage() {
     try {
       const response = await fetchCompetitorAnalysisResults();
 
-      if (response.error && !response.competitors?.length && !response.success) {
+      const hasUsableData = Boolean(
+        response.company_profile?.name ||
+          response.company?.name ||
+          response.company_analysis?.name ||
+          response.company_social_analysis ||
+          response.competitors?.length ||
+          response.analysis?.swot,
+      );
+
+      if (!hasUsableData) {
         throw new Error(
-          typeof response.error === "string" ? response.error : "Failed to load analysis results",
+          typeof response.error === "string" && response.error
+            ? response.error
+            : "Failed to load analysis results",
         );
       }
 
-      const region = response.filters_applied?.region ?? "Global";
-      setData(
-        mapApiResponseToDashboard(response, {
-          company_data: response.company_profile?.description ?? response.summary ?? "",
-          region,
-        }),
-      );
+      setData(mapApiResponseToOverview(response));
     } catch (err) {
       setResultsError(err instanceof Error ? err.message : "Failed to load analysis results");
       setData(null);
@@ -81,15 +86,10 @@ export function DashboardResultsPage() {
         },
       });
 
-      if (response.error && !response.competitors?.length) {
-        throw new Error(response.error);
-      }
-
-      setData(mapApiResponseToDashboard(response, payload));
+      setData(mapApiResponseToOverview(response));
       setModalOpen(false);
       setJobStatus(null);
       setJobId(null);
-
       void loadResults();
     } catch (err) {
       setAnalysisError(err instanceof Error ? err.message : "Something went wrong");
@@ -98,35 +98,43 @@ export function DashboardResultsPage() {
     }
   };
 
-  const company = data?.company ?? defaultCompany;
+  const company = data
+    ? { name: data.hero.name, logoInitials: data.hero.initials }
+    : defaultCompany;
 
   return (
     <DashboardLayout navItems={getNavItems("overview")} company={company}>
-      <div className="relative min-h-full">
-        <div className="flex items-center justify-between gap-4 border-b border-slate-200 bg-white px-6 py-4">
+      <div className="relative min-h-full bg-slate-50">
+        <div className="flex flex-col gap-3 border-b border-slate-200 bg-white px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-lg font-semibold text-slate-900">Dashboard</h1>
+            <p className="text-xs text-slate-400">Overview › Company Overview</p>
+            <h1 className="text-lg font-semibold text-slate-900">Company Overview</h1>
             <p className="text-xs text-slate-500">
               {analyzing && jobStatus
                 ? jobStatus
                 : loadingResults
                   ? "Loading latest analysis..."
                   : data
-                    ? `Last updated ${data.lastUpdated}`
+                    ? `Last updated ${formatHeaderDate(data.lastUpdated)}`
                     : "No saved analysis yet"}
             </p>
           </div>
-          <Button
-            type="button"
-            variant="primary"
-            onClick={() => {
-              setAnalysisError(null);
-              setModalOpen(true);
-            }}
-            disabled={analyzing}
-          >
-            Start Analysis
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" type="button" disabled>
+              Export Report
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              onClick={() => {
+                setAnalysisError(null);
+                setModalOpen(true);
+              }}
+              disabled={analyzing}
+            >
+              Start Analysis
+            </Button>
+          </div>
         </div>
 
         {loadingResults && (
@@ -186,7 +194,7 @@ export function DashboardResultsPage() {
           </div>
         )}
 
-        {!loadingResults && data && <DashboardView data={data} embedded />}
+        {!loadingResults && data && <OverviewView data={data} />}
 
         <AnalysisSetupModal
           open={modalOpen}
@@ -200,4 +208,18 @@ export function DashboardResultsPage() {
       </div>
     </DashboardLayout>
   );
+}
+
+function formatHeaderDate(value: string): string {
+  try {
+    return new Date(value).toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  } catch {
+    return value;
+  }
 }

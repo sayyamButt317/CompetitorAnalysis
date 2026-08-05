@@ -135,8 +135,9 @@ function buildInsights(
 
   const top = sorted[0];
   if (top) {
+    const leadLabel = top.username ? `@${top.username}` : (top.name ?? "Top competitor");
     insights.push(
-      `@${top.username} leads with ${formatEngagementRate(top.content_strategy?.avg_engagement_rate)} average engagement.`,
+      `${leadLabel} leads with ${formatEngagementRate(top.content_strategy?.avg_engagement_rate)} average engagement.`,
     );
   }
 
@@ -239,7 +240,7 @@ export function mapCompetitorsListToPage(
 
   const topCompetitors: CompetitorRow[] = ranked.slice(0, 10).map((c, i) => ({
     rank: i + 1,
-    handle: `@${c.username}`,
+    handle: c.username ? `@${c.username}` : (c.name ?? `Competitor ${i + 1}`),
     name: c.name ?? c.username ?? "Unknown",
     followers: c.followers ?? 0,
     avgEngagement: c.content_strategy?.avg_engagement_rate ?? 0,
@@ -251,9 +252,9 @@ export function mapCompetitorsListToPage(
     imageUrl: c.image_url ?? c.profile_picture_url,
   }));
 
-  const competitorDetails: CompetitorDetailRow[] = ranked.map((c) => ({
+  const competitorDetails: CompetitorDetailRow[] = ranked.map((c, i) => ({
     username: c.username ?? "",
-    handle: `@${c.username}`,
+    handle: c.username ? `@${c.username}` : (c.name ?? `Competitor ${i + 1}`),
     name: c.name ?? c.username ?? "Unknown",
     imageUrl: c.image_url ?? c.profile_picture_url,
     followers: c.followers ?? 0,

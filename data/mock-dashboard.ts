@@ -307,4 +307,6 @@ export const dashboardData: DashboardData = {
   recommendations: [],
   similarityScores: [],
   competitorLinkedIn: [],
+  discoveryWarnings: [],
+  analysisSuccess: true,
 };

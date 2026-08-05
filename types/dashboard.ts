@@ -119,8 +119,22 @@ export interface CompanyLinkedInView {
   businessSignals: string[];
   themes: { theme: string; count: number }[];
   employees: { name: string; designation: string; url?: string }[];
+  jobOpenings: { title: string; location?: string; url?: string; snippet?: string }[];
   warnings: string[];
   skipped?: boolean;
+}
+
+export interface SearchIntelligenceView {
+  companyName?: string;
+  confidence?: number;
+  searchKeywords: string[];
+  searchQueries: string[];
+  industryTerms: string[];
+  productTerms: string[];
+  audienceTerms: string[];
+  competitorPatterns: string[];
+  alternativeNames: string[];
+  excludedTerms: string[];
 }
 
 export interface CompetitorLinkedInRow {
@@ -203,5 +217,9 @@ export interface DashboardData {
   gapAnalysis?: GapAnalysisView;
   similarityScores: SimilarityRow[];
   swot?: SwotView;
+  searchIntelligence?: SearchIntelligenceView;
   discoveryReasoning?: string;
+  analysisError?: string | null;
+  discoveryWarnings: string[];
+  analysisSuccess: boolean;
 }
