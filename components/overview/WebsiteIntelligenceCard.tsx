@@ -92,7 +92,8 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 function ScoreRing({ score }: { score: number }) {
   const radius = 18;
   const circumference = 2 * Math.PI * radius;
-  const dash = (Math.min(Math.max(score, 0), 100) / 100) * circumference;
+  const safeScore = Number.isFinite(score) ? Math.min(Math.max(score, 0), 100) : 0;
+  const dash = (safeScore / 100) * circumference;
 
   return (
     <svg viewBox="0 0 48 48" className="h-12 w-12 -rotate-90">

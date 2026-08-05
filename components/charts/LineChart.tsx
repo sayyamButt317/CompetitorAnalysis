@@ -6,19 +6,42 @@ interface LineChartProps {
   height?: number;
 }
 
+function safeNumber(value: number, fallback = 0): number {
+  return Number.isFinite(value) ? value : fallback;
+}
+
 export function LineChart({ data, color = "#6366f1", height = 160 }: LineChartProps) {
+  if (data.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center text-xs text-slate-400">
+        No trend data
+      </div>
+    );
+  }
+
   const padding = { top: 20, right: 20, bottom: 30, left: 10 };
   const width = 400;
   const chartHeight = height - padding.top - padding.bottom;
   const chartWidth = width - padding.left - padding.right;
 
-  const values = data.map((d) => d.value);
-  const min = Math.min(...values) * 0.9;
-  const max = Math.max(...values) * 1.05;
+  const values = data.map((d) => d.value).filter((value) => Number.isFinite(value));
+  const rawMin = values.length > 0 ? Math.min(...values) : 0;
+  const rawMax = values.length > 0 ? Math.max(...values) : 1;
+  let min = rawMin * 0.9;
+  let max = rawMax * 1.05;
+  if (!Number.isFinite(min) || !Number.isFinite(max) || max <= min) {
+    min = Math.min(rawMin, 0);
+    max = Math.max(rawMax, min + 1);
+  }
+  const range = max - min || 1;
+  const divisor = Math.max(data.length - 1, 1);
 
   const points = data.map((d, i) => {
-    const x = padding.left + (i / (data.length - 1)) * chartWidth;
-    const y = padding.top + chartHeight - ((d.value - min) / (max - min)) * chartHeight;
+    const x = safeNumber(padding.left + (i / divisor) * chartWidth, padding.left);
+    const y = safeNumber(
+      padding.top + chartHeight - ((d.value - min) / range) * chartHeight,
+      padding.top + chartHeight / 2,
+    );
     return { x, y, ...d };
   });
 
@@ -40,7 +63,15 @@ export function LineChart({ data, color = "#6366f1", height = 160 }: LineChartPr
       <path d={linePath} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
 
       {points.map((p) => (
-        <circle key={p.label} cx={p.x} cy={p.y} r="3.5" fill="white" stroke={color} strokeWidth="2" />
+        <circle
+          key={p.label}
+          cx={String(p.x)}
+          cy={String(p.y)}
+          r="3.5"
+          fill="white"
+          stroke={color}
+          strokeWidth="2"
+        />
       ))}
 
       {lastPoint && (
@@ -61,7 +92,7 @@ export function LineChart({ data, color = "#6366f1", height = 160 }: LineChartPr
             fontSize="10"
             fontWeight="600"
           >
-            {lastPoint.value}%
+            {Number.isFinite(lastPoint.value) ? `${lastPoint.value}%` : "—"}
           </text>
         </g>
       )}
@@ -69,7 +100,7 @@ export function LineChart({ data, color = "#6366f1", height = 160 }: LineChartPr
       {data.map((d, i) => (
         <text
           key={d.label}
-          x={padding.left + (i / (data.length - 1)) * chartWidth}
+          x={padding.left + (i / divisor) * chartWidth}
           y={height - 8}
           textAnchor="middle"
           fill="#94a3b8"

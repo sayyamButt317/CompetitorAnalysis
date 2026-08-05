@@ -13,12 +13,22 @@ export function DonutChart({
   centerValue,
   size = 160,
 }: DonutChartProps) {
-  const total = segments.reduce((sum, s) => sum + s.value, 0);
+  const safeSegments = segments.filter((segment) => Number.isFinite(segment.value) && segment.value > 0);
+  const total = safeSegments.reduce((sum, s) => sum + s.value, 0);
+
+  if (safeSegments.length === 0 || total <= 0) {
+    return (
+      <div className="flex w-full items-center justify-center py-6 text-xs text-slate-400">
+        No chart data
+      </div>
+    );
+  }
+
   const radius = 40;
   const circumference = 2 * Math.PI * radius;
   let offset = 0;
 
-  const slices = segments.map((segment) => {
+  const slices = safeSegments.map((segment) => {
     const pct = segment.value / total;
     const dash = pct * circumference;
     const slice = {
