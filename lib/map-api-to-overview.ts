@@ -34,10 +34,20 @@ import type {
   OverviewTechnologyIntel,
   OverviewWebsiteIntelCard,
   OverviewWebsiteSection,
+  OverviewLinkedInMarketRow,
+  OverviewReportExtras,
 } from "@/types/overview";
 import { formatEngagementRate, formatNumber } from "@/lib/format";
 
 const CHART_COLORS = ["#6366f1", "#a78bfa", "#c4b5fd", "#22c55e", "#f59e0b", "#94a3b8", "#ef4444", "#0ea5e9"];
+
+function isInternalOpsWarning(warning: string): boolean {
+  return /LINKEDIN_SCRAPE_COMPETITORS|Tavily only|Playwright for competitors/i.test(warning);
+}
+
+function filterUserFacingWarnings(warnings: string[] | undefined): string[] {
+  return (warnings ?? []).filter((warning) => Boolean(warning) && !isInternalOpsWarning(warning));
+}
 
 function initials(name: string): string {
   return name
@@ -372,15 +382,28 @@ function buildLinkedIn(
   response: CompetitorAnalysisResponse,
 ): OverviewLinkedInSection | undefined {
   const li = response.company_social_analysis?.user_linkedin;
-  if (!li || li.skipped) return undefined;
+  const analysisLi = response.analysis?.linkedin?.user;
+  const reportLi = response.competitor_intelligence_report?.linkedin_analysis?.user;
+  const profileExtras = {
+    ...(typeof reportLi === "object" && reportLi ? reportLi : {}),
+    ...(typeof analysisLi === "object" && analysisLi ? analysisLi : {}),
+  } as Record<string, unknown>;
 
-  const analysis = li.analysis ?? li.linkedin_analysis;
-  const themesRaw = li.content_themes ?? li.linkedin_content_themes ?? analysis?.content_themes ?? [];
+  if ((!li || li.skipped) && !profileExtras.industry && !profileExtras.tagline) {
+    return undefined;
+  }
+
+  const analysis = li?.analysis ?? li?.linkedin_analysis ?? analysisLi?.analysis;
+  const themesRaw =
+    li?.content_themes ??
+    li?.linkedin_content_themes ??
+    analysis?.content_themes ??
+    [];
   const themeTotal =
     themesRaw.reduce((sum, item) => sum + (typeof item === "object" ? item.count : 1), 0) || 1;
 
-  const employees = (li.employees ?? [])
-    .filter((e): e is typeof e & { name: string } => Boolean(e.name))
+  const employees = (li?.employees ?? analysisLi?.employees ?? [])
+    .filter((e): e is typeof e & { name: string } => Boolean(e?.name))
     .slice(0, 6)
     .map((e) => ({
       name: e.name,
@@ -391,12 +414,15 @@ function buildLinkedIn(
     }));
 
   const employeeCount =
-    li.employee_count ??
+    li?.employee_count ??
     analysis?.employee_count ??
-    (Array.isArray(li.employees) ? li.employees.length : 0) ??
+    (typeof profileExtras.employee_count === "number" ? profileExtras.employee_count : undefined) ??
+    (Array.isArray(li?.employees) ? li.employees.length : 0) ??
     0;
 
-  if (!employeeCount && !analysis && employees.length === 0) return undefined;
+  if (!employeeCount && !analysis && employees.length === 0 && !profileExtras.tagline) {
+    return undefined;
+  }
 
   const samplePosts = (analysis?.sample_posts ?? [])
     .filter((post): post is { text?: string; linkedin_url?: string; source?: string } =>
@@ -410,34 +436,91 @@ function buildLinkedIn(
     }))
     .filter((post) => post.text);
 
-  const jobOpenings = (li.job_openings ?? []).slice(0, 6).map((job) => ({
+  const jobOpenings = (li?.job_openings ?? analysisLi?.job_openings ?? []).slice(0, 6).map((job) => ({
     title: job.job_title ?? "Open role",
     location: job.location ?? undefined,
     url: job.linkedin_url ?? undefined,
     snippet: job.snippet,
   }));
 
+  const specialties = Array.isArray(profileExtras.specialties)
+    ? profileExtras.specialties.map(String).filter(Boolean)
+    : [];
+
+  const signalFlags = [
+    { label: "Hiring", active: Boolean(profileExtras.hiring ?? li?.is_hiring ?? analysis?.is_hiring) },
+    { label: "Partnerships", active: Boolean(profileExtras.partnerships) },
+    { label: "Product launches", active: Boolean(profileExtras.product_launches) },
+    { label: "Funding", active: Boolean(profileExtras.funding) },
+    { label: "Awards", active: Boolean(profileExtras.awards) },
+    { label: "Case studies", active: Boolean(profileExtras.case_studies) },
+    { label: "AI posts", active: Boolean(profileExtras.ai_posts) },
+    { label: "Blogs", active: Boolean(profileExtras.blogs) },
+    { label: "Videos", active: Boolean(profileExtras.videos) },
+  ];
+
   return {
-    url: li.linkedin_url ?? response.company?.linkedin_url ?? undefined,
+    url:
+      li?.linkedin_url ||
+      (typeof profileExtras.linkedin_url === "string" ? profileExtras.linkedin_url : undefined) ||
+      response.company?.linkedin_url ||
+      undefined,
+    postsUrl:
+      (typeof analysisLi?.linkedin_posts_url === "string"
+        ? analysisLi.linkedin_posts_url
+        : undefined) ??
+      response.company_analysis?.linkedin_posts_url ??
+      undefined,
     employeeCount,
-    postCount: li.post_count ?? analysis?.post_count ?? 0,
+    postCount:
+      li?.post_count ??
+      analysis?.post_count ??
+      (typeof profileExtras.post_count === "number" ? profileExtras.post_count : 0),
     avgPostLength: analysis?.avg_post_length,
-    isHiring: Boolean(li.is_hiring ?? analysis?.is_hiring ?? analysis?.active_hiring),
-    openRoles: analysis?.open_roles ?? analysis?.job_openings_count ?? li.job_count ?? 0,
-    thoughtLeadershipLabel: thoughtLeadershipLabel(analysis?.thought_leadership_score ?? 0),
-    thoughtLeadershipScore: analysis?.thought_leadership_score ?? 0,
+    isHiring: Boolean(li?.is_hiring ?? analysis?.is_hiring ?? analysis?.active_hiring ?? profileExtras.hiring),
+    openRoles: analysis?.open_roles ?? analysis?.job_openings_count ?? li?.job_count ?? 0,
+    thoughtLeadershipLabel: thoughtLeadershipLabel(
+      analysis?.thought_leadership_score ??
+        (typeof profileExtras.thought_leadership_score === "number"
+          ? profileExtras.thought_leadership_score
+          : 0),
+    ),
+    thoughtLeadershipScore:
+      analysis?.thought_leadership_score ??
+      (typeof profileExtras.thought_leadership_score === "number"
+        ? profileExtras.thought_leadership_score
+        : 0),
+    thoughtLeadershipPosts:
+      typeof analysis?.thought_leadership_posts === "number"
+        ? analysis.thought_leadership_posts
+        : undefined,
     isThoughtLeader: Boolean(analysis?.is_thought_leader),
-    companySize: analysis?.company_size ?? li.company_size ?? undefined,
+    companySize: (analysis?.company_size ??
+      li?.company_size ??
+      (typeof profileExtras.company_size === "string" ? profileExtras.company_size : undefined)) ||
+      undefined,
+    industry:
+      typeof profileExtras.industry === "string" ? profileExtras.industry : undefined,
+    tagline: typeof profileExtras.tagline === "string" ? profileExtras.tagline : undefined,
+    headquarters:
+      typeof profileExtras.headquarters === "string" ? profileExtras.headquarters : undefined,
+    website: typeof profileExtras.website === "string" ? profileExtras.website : undefined,
+    followers: typeof profileExtras.followers === "number" ? profileExtras.followers : undefined,
+    specialties,
+    signalFlags,
     positioningFocus: analysis?.positioning_focus ?? [],
     businessSignals: [
       ...(analysis?.b2b_signals ?? []),
       ...(analysis?.signals ?? []),
-      ...(li.hiring_signals ?? []).slice(0, 3),
-      ...(li.is_hiring || analysis?.is_hiring ? ["Hiring actively"] : []),
+      ...(Array.isArray(profileExtras.business_signals)
+        ? profileExtras.business_signals.map(String)
+        : []),
+      ...(li?.hiring_signals ?? []).slice(0, 3),
+      ...(li?.is_hiring || analysis?.is_hiring || profileExtras.hiring ? ["Hiring actively"] : []),
     ]
       .map((signal) => (signal.length > 48 ? `${signal.slice(0, 45)}...` : signal))
       .filter((value, index, arr) => arr.indexOf(value) === index)
-      .slice(0, 8),
+      .slice(0, 12),
     themes: themesRaw.map((item) => {
       if (typeof item === "string") {
         return { theme: item, count: 1, share: Math.round(100 / themesRaw.length) };
@@ -451,7 +534,11 @@ function buildLinkedIn(
     employees,
     samplePosts,
     jobOpenings,
-    warnings: li.warnings ?? [],
+    hiringSignals: li?.hiring_signals ?? analysisLi?.hiring_signals ?? [],
+    warnings: filterUserFacingWarnings([
+      ...(li?.warnings ?? []),
+      ...(analysisLi?.warnings ?? []),
+    ]).filter((value, index, arr) => arr.indexOf(value) === index),
   };
 }
 
@@ -459,6 +546,8 @@ function buildWebsite(response: CompetitorAnalysisResponse): OverviewWebsiteSect
   const profile = response.company_profile;
   const analysis = response.company_analysis;
   const search = response.search_intelligence;
+  const seo = response.analysis?.seo;
+  const websiteBundle = response.analysis?.website;
   const services =
     profile?.services ??
     response.company?.services ??
@@ -468,15 +557,36 @@ function buildWebsite(response: CompetitorAnalysisResponse): OverviewWebsiteSect
     profile?.technologies?.filter((t) => t.length > 1) ??
     analysis?.technologies ??
     [];
-  const keywords = profile?.keywords ?? search?.search_keywords ?? [];
-  const confidence = Math.round((search?.confidence ?? profile?.confidence ?? 0) * 100);
+  const keywords =
+    seo?.keywords ??
+    profile?.keywords ??
+    search?.search_keywords ??
+    [];
+  const confidence = Math.round(
+    (seo?.confidence ?? search?.confidence ?? profile?.confidence ?? 0) * 100,
+  );
 
-  const topPages = (search?.search_queries ?? keywords).slice(0, 5).map((query, index) => ({
-    path: query.startsWith("/") ? query : `/${query.replace(/\s+/g, "-").toLowerCase()}`,
-    value: Math.max(20, 100 - index * 15),
-  }));
+  const topPages = (seo?.search_queries?.length
+    ? seo.search_queries
+    : search?.search_queries ?? keywords
+  )
+    .slice(0, 5)
+    .map((query, index) => ({
+      path: query.startsWith("/") ? query : `/${query.replace(/\s+/g, "-").toLowerCase()}`,
+      value: Math.max(20, 100 - index * 15),
+    }));
+
+  const webCrawl = websiteBundle?.web_crawl ?? response.web_crawl;
+  const webCrawlAvailable = Boolean(
+    webCrawl && typeof webCrawl === "object" && Object.keys(webCrawl as object).length > 0,
+  );
 
   return {
+    url:
+      (typeof websiteBundle?.url === "string" ? websiteBundle.url : undefined) ??
+      profile?.website ??
+      analysis?.website ??
+      undefined,
     pagesLabel: String(Math.max(services.length * 2, topPages.length || 4)),
     blogLabel: keywords.some((k) => /blog|content/i.test(k)) ? "Active" : "Limited",
     servicesLabel: String(services.length || "—"),
@@ -500,7 +610,21 @@ function buildWebsite(response: CompetitorAnalysisResponse): OverviewWebsiteSect
         score: Math.min(100, services.length * 10),
       },
     ],
-    available: Boolean(profile?.website || technologies.length || keywords.length || services.length),
+    seoKeywords: keywords,
+    seoKeywordGaps: seo?.keyword_gaps ?? [],
+    seoIndustryTerms: seo?.industry_terms ?? search?.industry_terms ?? [],
+    seoProductTerms: seo?.product_terms ?? search?.product_terms ?? [],
+    seoAudienceTerms: seo?.audience_terms ?? search?.audience_terms ?? [],
+    seoCompetitorPatterns: seo?.competitor_patterns ?? search?.competitor_patterns ?? [],
+    seoSearchQueries: seo?.search_queries ?? search?.search_queries ?? [],
+    webCrawlAvailable,
+    available: Boolean(
+      profile?.website ||
+        technologies.length ||
+        keywords.length ||
+        services.length ||
+        websiteBundle?.url,
+    ),
   };
 }
 
@@ -524,6 +648,13 @@ function competitorSimilarity(
     location: fromCompetitor?.location ?? fromScores?.location ?? 0,
     industry: fromCompetitor?.industry ?? 0,
     pricing: fromCompetitor?.pricing ?? 0,
+    products: fromCompetitor?.products ?? 0,
+    audience: fromCompetitor?.audience ?? fromCompetitor?.target_audience ?? 0,
+    businessModel: fromCompetitor?.business_model ?? 0,
+    positioning: fromCompetitor?.positioning ?? 0,
+    geography: fromCompetitor?.geography ?? 0,
+    socialStrategy: fromCompetitor?.social_strategy ?? 0,
+    contentStrategy: fromCompetitor?.content_strategy ?? 0,
     explanation: fromCompetitor?.explanation,
   };
 }
@@ -586,6 +717,10 @@ function buildCompetitorDetails(
       regionMatch: Boolean(competitor.region_match),
       nicheMatch: Boolean(competitor.niche_match),
       authenticity: competitor.authenticity,
+      discoveredBy: competitor.discovered_by,
+      linkedinUsername: competitor.linkedin_username ?? undefined,
+      socialWarnings: filterUserFacingWarnings(competitor.social_warnings),
+      hiringSignals: competitor.hiring_signals ?? [],
       primaryFormat: strategy?.primary_format ?? ig?.primary_format,
       primaryCategory: strategy?.primary_content_category ?? ig?.primary_content_category,
       contentFocus: strategy?.content_focus ?? ig?.content_focus,
@@ -593,6 +728,7 @@ function buildCompetitorDetails(
         strategy?.best_performing_format?.format ?? ig?.best_performing_format?.format,
       employeeCount: competitor.employee_count ?? competitor.employees?.length ?? 0,
       isHiring: Boolean(competitor.is_hiring),
+      companySize: competitor.company_size ?? undefined,
       thoughtLeadershipScore: li?.thought_leadership_score ?? 0,
       mediaMix: toSegments(
         mediaMixSource.map((item) => ({
@@ -637,6 +773,11 @@ function buildCompetitorDetails(
           designation: e.designation ?? "",
           url: e.linkedin_url,
         })),
+      jobOpenings: (competitor.job_openings ?? []).slice(0, 4).map((job) => ({
+        title: job.job_title ?? "Open role",
+        location: job.location ?? undefined,
+        url: job.linkedin_url ?? undefined,
+      })),
       linkedinThemes: (li?.content_themes ?? []).slice(0, 5).map((theme) => theme.theme),
       linkedinSamplePosts: (li?.sample_posts ?? [])
         .slice(0, 3)
@@ -668,56 +809,55 @@ function buildComparison(
   companyLi: OverviewLinkedInSection | undefined,
   competitors: OverviewCompetitorDetail[],
 ): { handles: string[]; rows: OverviewComparisonRow[] } {
-  const top = competitors.slice(0, 5);
-  const handles = top.map((c) => (c.username ? `@${c.username}` : c.name.slice(0, 18)));
+  const handles = competitors.map((c) => (c.username ? `@${c.username}` : c.name.slice(0, 18)));
 
   const rows: OverviewComparisonRow[] = [
     {
       label: "Followers",
       you: companyIg ? formatNumber(companyIg.followers) : "—",
-      competitors: top.map((c) => formatNumber(c.followers)),
+      competitors: competitors.map((c) => formatNumber(c.followers)),
     },
     {
       label: "Avg Engagement",
       you: companyIg ? formatEngagementRate(companyIg.avgEngagement) : "—",
-      competitors: top.map((c) => formatEngagementRate(c.avgEngagement)),
+      competitors: competitors.map((c) => formatEngagementRate(c.avgEngagement)),
     },
     {
       label: "Posts Analyzed",
       you: companyIg ? String(companyIg.postCount) : "—",
-      competitors: top.map((c) => String(c.postCount)),
+      competitors: competitors.map((c) => String(c.postCount)),
     },
     {
       label: "Primary Format",
       you: companyIg?.primaryFormat ?? "—",
-      competitors: top.map((c) => c.primaryFormat ?? "—"),
+      competitors: competitors.map((c) => c.primaryFormat ?? "—"),
     },
     {
       label: "Best Format",
       you: companyIg?.bestFormat ?? "—",
-      competitors: top.map((c) => c.bestFormat ?? "—"),
+      competitors: competitors.map((c) => c.bestFormat ?? "—"),
     },
     {
       label: "Employees",
       you: companyLi ? formatNumber(companyLi.employeeCount) : "—",
-      competitors: top.map((c) => formatNumber(c.employeeCount)),
+      competitors: competitors.map((c) => formatNumber(c.employeeCount)),
     },
     {
       label: "Match Score",
       you: "You",
-      competitors: top.map((c) =>
+      competitors: competitors.map((c) =>
         c.matchScore != null ? `${Math.round(c.matchScore * 100)}%` : "—",
       ),
     },
     {
       label: "Similarity",
       you: "100%",
-      competitors: top.map((c) => `${Math.round(c.similarity.overall * 100)}%`),
+      competitors: competitors.map((c) => `${Math.round(c.similarity.overall * 100)}%`),
     },
     {
       label: "Hiring",
       you: companyLi?.isHiring ? "Yes" : "No",
-      competitors: top.map((c) => (c.isHiring ? "Yes" : "No")),
+      competitors: competitors.map((c) => (c.isHiring ? "Yes" : "No")),
     },
   ];
 
@@ -797,6 +937,9 @@ function buildGapAnalysis(response: CompetitorAnalysisResponse): GapAnalysisView
     categories: toSegments(
       categories.map((item) => ({ label: item.category, value: item.count })),
     ),
+    competitorCount: gaps.competitor_count,
+    contentProfilesAnalyzed: gaps.content_profiles_analyzed,
+    websitesAnalyzed: gaps.websites_analyzed,
   };
 }
 
@@ -821,10 +964,21 @@ function buildMarketInsights(
   const market = response.market_insights;
   if (!market) return undefined;
 
-  const topics = (market.topics ?? []).map((item) => item.topic).filter(Boolean);
+  const topics = (market.topics ?? [])
+    .map((item) => ({
+      topic: item.topic,
+      postCount: item.post_count,
+      creatorCount: item.creator_count,
+    }))
+    .filter((item) => item.topic);
   const topHashtags = (market.top_hashtags ?? []).map((item) => ({
     tag: item.tag.startsWith("#") ? item.tag : `#${item.tag}`,
     count: item.count,
+  }));
+  const hashtagSummary = (market.hashtag_summary ?? []).map((item) => ({
+    tag: item.hashtag.startsWith("#") ? item.hashtag : `#${item.hashtag}`,
+    postCount: item.post_count ?? 0,
+    creatorCount: item.creator_count ?? 0,
   }));
   const formats = market.dominant_content_types ?? market.content_usage?.format_breakdown ?? [];
   const themes = market.dominant_themes ?? [];
@@ -835,6 +989,7 @@ function buildMarketInsights(
     !(
       topics.length ||
       topHashtags.length ||
+      hashtagSummary.length ||
       formats.length ||
       themes.length ||
       categories.length ||
@@ -847,7 +1002,10 @@ function buildMarketInsights(
   return {
     topics,
     topHashtags,
+    hashtagSummary,
     contentSummary: market.content_usage?.summary,
+    mostUsedFormat: market.content_usage?.most_used_format,
+    mostUsedCategory: market.content_usage?.most_used_category,
     dominantFormats: toSegments(
       formats.map((item) => ({
         label: item.type ?? item.format ?? "Unknown",
@@ -866,19 +1024,42 @@ function buildSearchIntelligence(
   response: CompetitorAnalysisResponse,
 ): SearchIntelligenceView | undefined {
   const search = response.search_intelligence;
-  if (!search) return undefined;
+  const seo = response.analysis?.seo;
+
+  const searchKeywords = search?.search_keywords ?? seo?.keywords ?? [];
+  const searchQueries = search?.search_queries ?? seo?.search_queries ?? [];
+  const industryTerms = search?.industry_terms ?? seo?.industry_terms ?? [];
+  const productTerms = search?.product_terms ?? seo?.product_terms ?? [];
+  const audienceTerms = search?.audience_terms ?? seo?.audience_terms ?? [];
+  const competitorPatterns = search?.competitor_patterns ?? seo?.competitor_patterns ?? [];
+
+  if (
+    !(
+      searchKeywords.length ||
+      searchQueries.length ||
+      industryTerms.length ||
+      productTerms.length ||
+      audienceTerms.length ||
+      competitorPatterns.length ||
+      search?.company_name ||
+      search?.alternative_names?.length ||
+      search?.excluded_terms?.length
+    )
+  ) {
+    return undefined;
+  }
 
   return {
-    companyName: search.company_name,
-    confidence: search.confidence,
-    searchKeywords: search.search_keywords ?? [],
-    searchQueries: search.search_queries ?? [],
-    industryTerms: search.industry_terms ?? [],
-    productTerms: search.product_terms ?? [],
-    audienceTerms: search.audience_terms ?? [],
-    competitorPatterns: search.competitor_patterns ?? [],
-    alternativeNames: search.alternative_names ?? [],
-    excludedTerms: search.excluded_terms ?? [],
+    companyName: search?.company_name,
+    confidence: search?.confidence ?? seo?.confidence ?? undefined,
+    searchKeywords,
+    searchQueries,
+    industryTerms,
+    productTerms,
+    audienceTerms,
+    competitorPatterns,
+    alternativeNames: search?.alternative_names ?? [],
+    excludedTerms: search?.excluded_terms ?? [],
   };
 }
 
@@ -918,6 +1099,13 @@ function buildAverageSimilarity(
     industry: avg.industry ?? 0,
     pricing: avg.pricing ?? 0,
     targetAudience: avg.target_audience ?? 0,
+    products: avg.products,
+    audience: avg.audience,
+    businessModel: avg.business_model,
+    positioning: avg.positioning,
+    geography: avg.geography,
+    socialStrategy: avg.social_strategy,
+    contentStrategy: avg.content_strategy,
   };
 }
 
@@ -1196,7 +1384,7 @@ function buildPipelineStatus(
     instagramAnalyzed: Boolean(profile.instagram_analyzed),
     linkedinAnalyzed: Boolean(profile.linkedin_analyzed),
     detectedNiche: profile.detected_niche,
-    warnings: profile.warnings ?? [],
+    warnings: filterUserFacingWarnings(profile.warnings),
     services: profile.services ?? [],
     technologies: profile.technologies ?? [],
   };
@@ -1205,7 +1393,8 @@ function buildPipelineStatus(
 function buildCompanyExtras(response: CompetitorAnalysisResponse): OverviewCompanyExtras {
   const profile = response.company_profile;
   const analysis = response.company_analysis;
-  const signals = profile?.company_signals;
+  const signals = profile?.company_signals ?? response.company?.extracted_signals;
+  const dna = response.company_social_analysis?.company_dna;
 
   return {
     businessModel: profile?.business_model ?? analysis?.business_model ?? undefined,
@@ -1216,14 +1405,132 @@ function buildCompanyExtras(response: CompetitorAnalysisResponse): OverviewCompa
           ? analysis.pricing_model
           : undefined,
     confidence: profile?.confidence ?? analysis?.confidence,
+    city: profile?.city ?? analysis?.city ?? undefined,
+    country: profile?.country ?? analysis?.country ?? undefined,
+    source: profile?.source ?? analysis?.source ?? undefined,
+    linkedinUsername:
+      profile?.linkedin_username ??
+      signals?.linkedin_username ??
+      undefined,
     competitorsHint: profile?.competitors_hint ?? analysis?.competitors_hint ?? [],
-    targetIndustries: profile?.target_industries ?? signals?.target_industries ?? [],
+    targetIndustries:
+      profile?.target_industries ??
+      signals?.target_industries ??
+      response.company?.extracted_signals?.target_industries ??
+      [],
     countries: profile?.countries ?? analysis?.countries ?? [],
     companySignals: [
       ...(signals?.services ?? []).slice(0, 6),
       ...(signals?.technologies ?? []).slice(0, 4),
     ],
-    extractedKeywords: profile?.extracted_keywords ?? signals?.keywords ?? [],
+    extractedKeywords:
+      profile?.extracted_keywords ??
+      signals?.keywords ??
+      response.company?.extracted_signals?.keywords ??
+      [],
+    flagshipServices:
+      profile?.flagship_services ??
+      signals?.flagship_services ??
+      response.company?.flagship_services ??
+      [],
+    audiencePainPoints: response.company_social_analysis?.audience_pain_points ?? [],
+    services:
+      profile?.services ??
+      response.company?.services ??
+      analysis?.services ??
+      dna?.services ??
+      [],
+    technologies:
+      profile?.technologies ??
+      analysis?.technologies ??
+      dna?.technologies ??
+      [],
+  };
+}
+
+function buildLinkedInMarket(
+  response: CompetitorAnalysisResponse,
+): OverviewLinkedInMarketRow[] {
+  const rows =
+    response.analysis?.linkedin?.competitors ??
+    response.competitor_intelligence_report?.linkedin_analysis?.competitors ??
+    [];
+
+  return rows.slice(0, 24).map((row) => {
+    const item = row as {
+      name?: string;
+      linkedin_url?: string | null;
+      industry?: string | null;
+      employee_count?: number | null;
+      followers?: number | null;
+      hiring?: boolean | null;
+      thought_leadership_score?: number | null;
+      specialties?: string[] | null;
+      business_signals?: string[];
+      partnerships?: boolean | null;
+      product_launches?: boolean | null;
+      funding?: boolean | null;
+      awards?: boolean | null;
+      case_studies?: boolean | null;
+      ai_posts?: boolean | null;
+      blogs?: boolean | null;
+      videos?: boolean | null;
+    };
+
+    const flags = [
+      item.partnerships ? "Partnerships" : null,
+      item.product_launches ? "Product launches" : null,
+      item.funding ? "Funding" : null,
+      item.awards ? "Awards" : null,
+      item.case_studies ? "Case studies" : null,
+      item.ai_posts ? "AI posts" : null,
+      item.blogs ? "Blogs" : null,
+      item.videos ? "Videos" : null,
+      item.hiring ? "Hiring" : null,
+    ].filter(Boolean) as string[];
+
+    return {
+      name: item.name ?? "Competitor",
+      url: item.linkedin_url ?? undefined,
+      industry: item.industry ?? undefined,
+      employeeCount: item.employee_count ?? 0,
+      followers: item.followers ?? undefined,
+      isHiring: Boolean(item.hiring),
+      thoughtLeadershipScore: item.thought_leadership_score ?? 0,
+      specialties: item.specialties ?? [],
+      signals: [...(item.business_signals ?? []), ...flags].slice(0, 10),
+    };
+  });
+}
+
+function buildReportExtras(response: CompetitorAnalysisResponse): OverviewReportExtras {
+  const webCrawl =
+    response.web_crawl && typeof response.web_crawl === "object"
+      ? (response.web_crawl as Record<string, unknown>)
+      : response.analysis?.website?.web_crawl &&
+          typeof response.analysis.website.web_crawl === "object"
+        ? (response.analysis.website.web_crawl as Record<string, unknown>)
+        : {};
+
+  const intelligence = response.competitor_intelligence;
+  let competitorIntelligencePreview: string | undefined;
+  if (intelligence != null) {
+    try {
+      const raw = typeof intelligence === "string" ? intelligence : JSON.stringify(intelligence);
+      competitorIntelligencePreview = raw.slice(0, 500);
+    } catch {
+      competitorIntelligencePreview = String(intelligence).slice(0, 500);
+    }
+  }
+
+  return {
+    intelligenceSummary:
+      response.competitor_intelligence_report?.summary ??
+      response.ai_report?.summary ??
+      undefined,
+    webCrawlKeys: Object.keys(webCrawl),
+    competitorIntelligencePresent: intelligence != null,
+    competitorIntelligencePreview,
   };
 }
 
@@ -1244,11 +1551,17 @@ function buildRunMeta(
       response.filters_applied?.discovery_source ?? meta?.discovery_source,
     competitorCount: response.competitor_count ?? competitorCount,
     postCount: response.post_count ?? 0,
+    postLimit: meta?.post_limit,
     analysisId: meta?.analysis_id,
+    promptId: meta?.prompt_id,
     agentMode: meta?.agent_mode,
+    status: meta?.status,
+    serverless: meta?.serverless,
     platforms: meta?.platforms ?? [],
     durationSec: meta?.duration_sec,
     skipLinkedIn: meta?.skip_linkedin,
+    timestamp: meta?.timestamp ?? meta?.created_at,
+    selectedCompetitors: response.filters_applied?.competitors ?? [],
     apiCalls: [
       { label: "Tavily", count: meta?.tavily_calls ?? 0 },
       { label: "Instagram", count: meta?.instagram_calls ?? 0 },
@@ -1423,6 +1736,8 @@ export function mapApiResponseToOverview(
     companyProducts: profile?.products ?? analysis?.products ?? [],
     companyFeatures: profile?.features ?? analysis?.features ?? [],
     companyExtras: buildCompanyExtras(response),
+    linkedInMarket: buildLinkedInMarket(response),
+    reportExtras: buildReportExtras(response),
     businessSignals: buildBusinessSignals(response),
     reviewIntel: buildReviewIntel(response),
     technologyIntel: buildTechnologyIntel(response),
@@ -1433,10 +1748,10 @@ export function mapApiResponseToOverview(
     pipelineStatus: buildPipelineStatus(response),
     lastUpdated: response.meta?.created_at ?? response.meta?.timestamp ?? "Just now",
     analysisError: typeof response.error === "string" ? response.error : null,
-    discoveryWarnings: [
+    discoveryWarnings: filterUserFacingWarnings([
       ...(response.discovery_warnings ?? []),
       ...(response.filters_applied?.discovery_warnings ?? []),
-    ].filter((value, index, arr) => arr.indexOf(value) === index),
+    ]).filter((value, index, arr) => arr.indexOf(value) === index),
     analysisSuccess: Boolean(response.success ?? response.meta?.success),
   };
 }

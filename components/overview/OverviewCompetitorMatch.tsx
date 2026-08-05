@@ -46,17 +46,21 @@ export function OverviewCompetitorMatch({
         <div className="border-b border-slate-100 px-5 py-4">
           <h3 className="text-sm font-semibold text-slate-800">You vs Competitors</h3>
           <p className="mt-0.5 text-xs text-slate-400">
-            Side-by-side metrics matching {companyName} against discovered rivals
+            Side-by-side metrics matching {companyName} against all {handles.length} competitors
           </p>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-xs">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/80 text-slate-500">
-                <th className="px-4 py-3 font-medium">Metric</th>
-                <th className="px-4 py-3 font-semibold text-indigo-700">{companyName}</th>
-                {handles.map((handle) => (
-                  <th key={handle} className="px-4 py-3 font-medium">
+                <th className="sticky left-0 z-10 whitespace-nowrap bg-slate-50 px-4 py-3 font-medium">
+                  Metric
+                </th>
+                <th className="whitespace-nowrap px-4 py-3 font-semibold text-indigo-700">
+                  {companyName}
+                </th>
+                {handles.map((handle, index) => (
+                  <th key={`${handle}-${index}`} className="whitespace-nowrap px-4 py-3 font-medium">
                     {handle}
                   </th>
                 ))}
@@ -65,10 +69,17 @@ export function OverviewCompetitorMatch({
             <tbody>
               {rows.map((row) => (
                 <tr key={row.label} className="border-b border-slate-50 last:border-0">
-                  <td className="px-4 py-3 font-medium text-slate-600">{row.label}</td>
-                  <td className="px-4 py-3 font-semibold text-slate-900">{row.you}</td>
+                  <td className="sticky left-0 z-10 whitespace-nowrap bg-white px-4 py-3 font-medium text-slate-600">
+                    {row.label}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 font-semibold text-slate-900">
+                    {row.you}
+                  </td>
                   {row.competitors.map((value, index) => (
-                    <td key={`${row.label}-${index}`} className="px-4 py-3 text-slate-700">
+                    <td
+                      key={`${row.label}-${index}`}
+                      className="whitespace-nowrap px-4 py-3 text-slate-700"
+                    >
                       {value}
                     </td>
                   ))}
@@ -118,8 +129,13 @@ export function OverviewCompetitorMatch({
               {competitor.regionMatch && <Chip tone="emerald">Region match</Chip>}
               {competitor.nicheMatch && <Chip tone="sky">Niche match</Chip>}
               {competitor.authenticity && <Chip tone="slate">{competitor.authenticity}</Chip>}
+              {competitor.discoveredBy && <Chip tone="indigo">Via {competitor.discoveredBy}</Chip>}
               {competitor.isHiring && <Chip tone="amber">Hiring</Chip>}
+              {competitor.companySize && <Chip tone="slate">{competitor.companySize}</Chip>}
               {competitor.bestFormat && <Chip tone="indigo">Best: {competitor.bestFormat}</Chip>}
+              {competitor.linkedinUsername && (
+                <Chip tone="sky">LI @{competitor.linkedinUsername}</Chip>
+              )}
             </div>
 
             {competitor.matchReasons.length > 0 && (
@@ -137,6 +153,16 @@ export function OverviewCompetitorMatch({
               </div>
             )}
 
+            {competitor.socialWarnings.length > 0 && (
+              <ul className="mb-4 space-y-1">
+                {competitor.socialWarnings.map((warning) => (
+                  <li key={warning} className="text-[11px] leading-relaxed text-amber-700">
+                    {warning}
+                  </li>
+                ))}
+              </ul>
+            )}
+
             <div className="mb-4 space-y-2">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
                 Similarity vs you
@@ -147,6 +173,15 @@ export function OverviewCompetitorMatch({
               <SimilarityBar label="Content" value={competitor.similarity.content} />
               <SimilarityBar label="Marketing" value={competitor.similarity.marketing} />
               <SimilarityBar label="Location" value={competitor.similarity.location} />
+              <SimilarityBar label="Industry" value={competitor.similarity.industry} />
+              <SimilarityBar label="Pricing" value={competitor.similarity.pricing} />
+              <SimilarityBar label="Products" value={competitor.similarity.products} />
+              <SimilarityBar label="Audience" value={competitor.similarity.audience} />
+              <SimilarityBar label="Business model" value={competitor.similarity.businessModel} />
+              <SimilarityBar label="Positioning" value={competitor.similarity.positioning} />
+              <SimilarityBar label="Geography" value={competitor.similarity.geography} />
+              <SimilarityBar label="Social strategy" value={competitor.similarity.socialStrategy} />
+              <SimilarityBar label="Content strategy" value={competitor.similarity.contentStrategy} />
               {competitor.similarity.explanation && (
                 <p className="pt-1 text-[11px] leading-relaxed text-slate-500">
                   {competitor.similarity.explanation}

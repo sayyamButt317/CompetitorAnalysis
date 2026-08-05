@@ -646,7 +646,13 @@ export interface ApiAnalysisBundle {
   recommendations?: ApiRecommendation[];
   seo?: {
     keywords?: string[];
+    search_queries?: string[];
+    industry_terms?: string[];
+    product_terms?: string[];
+    audience_terms?: string[];
     keyword_gaps?: string[];
+    competitor_patterns?: string[];
+    confidence?: number | null;
   };
   linkedin?: {
     scope?: string;

@@ -100,6 +100,7 @@ export interface OverviewInstagramSection {
 
 export interface OverviewLinkedInSection {
   url?: string;
+  postsUrl?: string;
   employeeCount: number;
   postCount: number;
   avgPostLength?: number;
@@ -107,18 +108,28 @@ export interface OverviewLinkedInSection {
   openRoles: number;
   thoughtLeadershipLabel: string;
   thoughtLeadershipScore: number;
+  thoughtLeadershipPosts?: number;
   isThoughtLeader: boolean;
   companySize?: string;
+  industry?: string;
+  tagline?: string;
+  headquarters?: string;
+  website?: string;
+  followers?: number;
+  specialties: string[];
+  signalFlags: { label: string; active: boolean }[];
   positioningFocus: string[];
   businessSignals: string[];
   themes: { theme: string; count: number; share: number }[];
   employees: { name: string; designation: string; url?: string; initials: string; source?: string }[];
   samplePosts: { text: string; url?: string; source?: string }[];
   jobOpenings: { title: string; location?: string; url?: string; snippet?: string }[];
+  hiringSignals: string[];
   warnings: string[];
 }
 
 export interface OverviewWebsiteSection {
+  url?: string;
   pagesLabel: string;
   blogLabel: string;
   servicesLabel: string;
@@ -126,6 +137,14 @@ export interface OverviewWebsiteSection {
   topPages: { path: string; value: number }[];
   technologies: string[];
   seoMetrics: { label: string; value: string; score: number }[];
+  seoKeywords: string[];
+  seoKeywordGaps: string[];
+  seoIndustryTerms: string[];
+  seoProductTerms: string[];
+  seoAudienceTerms: string[];
+  seoCompetitorPatterns: string[];
+  seoSearchQueries: string[];
+  webCrawlAvailable: boolean;
   available: boolean;
 }
 
@@ -158,12 +177,17 @@ export interface OverviewCompetitorDetail {
   regionMatch: boolean;
   nicheMatch: boolean;
   authenticity?: string;
+  discoveredBy?: string;
+  linkedinUsername?: string;
+  socialWarnings: string[];
+  hiringSignals: string[];
   primaryFormat?: string;
   primaryCategory?: string;
   contentFocus?: string;
   bestFormat?: string;
   employeeCount: number;
   isHiring: boolean;
+  companySize?: string;
   thoughtLeadershipScore: number;
   mediaMix: ChartSegment[];
   topHashtags: string[];
@@ -183,10 +207,18 @@ export interface OverviewCompetitorDetail {
     location: number;
     industry: number;
     pricing: number;
+    products: number;
+    audience: number;
+    businessModel: number;
+    positioning: number;
+    geography: number;
+    socialStrategy: number;
+    contentStrategy: number;
     explanation?: string;
   };
   posts: OverviewMediaPost[];
   employees: { name: string; designation: string; url?: string }[];
+  jobOpenings: { title: string; location?: string; url?: string }[];
   linkedinThemes: string[];
   linkedinSamplePosts: { text: string; url?: string }[];
 }
@@ -198,9 +230,12 @@ export interface OverviewComparisonRow {
 }
 
 export interface OverviewMarketInsights {
-  topics: string[];
+  topics: { topic: string; postCount?: number; creatorCount?: number }[];
   topHashtags: { tag: string; count: number }[];
+  hashtagSummary: { tag: string; postCount: number; creatorCount: number }[];
   contentSummary?: string;
+  mostUsedFormat?: string;
+  mostUsedCategory?: string;
   dominantFormats: ChartSegment[];
   dominantThemes: ChartSegment[];
   dominantCategories: ChartSegment[];
@@ -216,11 +251,17 @@ export interface OverviewRunMeta {
   discoverySource?: string;
   competitorCount: number;
   postCount: number;
+  postLimit?: number;
   analysisId?: string;
+  promptId?: string;
   agentMode?: string;
+  status?: string;
+  serverless?: boolean;
   platforms: string[];
   durationSec?: number;
   skipLinkedIn?: boolean;
+  timestamp?: string;
+  selectedCompetitors: string[];
   apiCalls: { label: string; count: number }[];
   callBreakdown: { label: string; count: number }[];
 }
@@ -336,17 +377,51 @@ export interface OverviewAverageSimilarity {
   industry: number;
   pricing: number;
   targetAudience: number;
+  products?: number;
+  audience?: number;
+  businessModel?: number;
+  positioning?: number;
+  geography?: number;
+  socialStrategy?: number;
+  contentStrategy?: number;
 }
 
 export interface OverviewCompanyExtras {
   businessModel?: string;
   pricingModel?: string;
   confidence?: number;
+  city?: string;
+  country?: string;
+  source?: string;
+  linkedinUsername?: string;
   competitorsHint: string[];
   targetIndustries: string[];
   countries: string[];
   companySignals: string[];
   extractedKeywords: string[];
+  flagshipServices: string[];
+  audiencePainPoints: string[];
+  services: string[];
+  technologies: string[];
+}
+
+export interface OverviewLinkedInMarketRow {
+  name: string;
+  url?: string;
+  industry?: string;
+  employeeCount: number;
+  followers?: number;
+  isHiring: boolean;
+  thoughtLeadershipScore: number;
+  specialties: string[];
+  signals: string[];
+}
+
+export interface OverviewReportExtras {
+  intelligenceSummary?: string;
+  webCrawlKeys: string[];
+  competitorIntelligencePresent: boolean;
+  competitorIntelligencePreview?: string;
 }
 
 export interface OverviewPageData {
@@ -374,6 +449,8 @@ export interface OverviewPageData {
   companyProducts: string[];
   companyFeatures: string[];
   companyExtras: OverviewCompanyExtras;
+  linkedInMarket?: OverviewLinkedInMarketRow[];
+  reportExtras: OverviewReportExtras;
   businessSignals?: OverviewBusinessSignals;
   reviewIntel?: OverviewReviewIntel;
   technologyIntel?: OverviewTechnologyIntel;

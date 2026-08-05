@@ -59,21 +59,48 @@ export function OverviewIntelligencePanels({
               {marketInsights.contentSummary}
             </p>
           )}
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-            {marketInsights.dominantFormats.length > 0 && (
-              <div>
-                <p className="mb-2 text-xs font-semibold text-slate-500">Dominant Formats</p>
-                <DonutChart segments={marketInsights.dominantFormats} centerLabel="Formats" size={130} />
-              </div>
-            )}
-            {marketInsights.dominantThemes.length > 0 && (
-              <div>
-                <p className="mb-2 text-xs font-semibold text-slate-500">Dominant Themes</p>
-                <DonutChart segments={marketInsights.dominantThemes} centerLabel="Themes" size={130} />
+          {(marketInsights.mostUsedFormat || marketInsights.mostUsedCategory) && (
+            <div className="mb-4 flex flex-wrap gap-2">
+              {marketInsights.mostUsedFormat && (
+                <span className="rounded-md bg-indigo-50 px-2.5 py-1 text-[11px] font-medium text-indigo-700">
+                  Most used format: {marketInsights.mostUsedFormat}
+                </span>
+              )}
+              {marketInsights.mostUsedCategory && (
+                <span className="rounded-md bg-violet-50 px-2.5 py-1 text-[11px] font-medium text-violet-700">
+                  Most used category: {marketInsights.mostUsedCategory}
+                </span>
+              )}
+            </div>
+          )}
+          <div className="space-y-5">
+            {(marketInsights.dominantFormats.length > 0 ||
+              marketInsights.dominantThemes.length > 0) && (
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                {marketInsights.dominantFormats.length > 0 && (
+                  <div className="min-w-0 overflow-hidden">
+                    <p className="mb-2 text-xs font-semibold text-slate-500">Dominant Formats</p>
+                    <DonutChart
+                      segments={marketInsights.dominantFormats}
+                      centerLabel="Formats"
+                      size={130}
+                    />
+                  </div>
+                )}
+                {marketInsights.dominantThemes.length > 0 && (
+                  <div className="min-w-0 overflow-hidden">
+                    <p className="mb-2 text-xs font-semibold text-slate-500">Dominant Themes</p>
+                    <DonutChart
+                      segments={marketInsights.dominantThemes}
+                      centerLabel="Themes"
+                      size={130}
+                    />
+                  </div>
+                )}
               </div>
             )}
             {marketInsights.dominantCategories.length > 0 && (
-              <div>
+              <div className="w-full min-w-0 overflow-hidden">
                 <p className="mb-2 text-xs font-semibold text-slate-500">Categories</p>
                 <DonutChart
                   segments={marketInsights.dominantCategories}
@@ -89,10 +116,12 @@ export function OverviewIntelligencePanels({
               <div className="flex flex-wrap gap-1.5">
                 {marketInsights.topics.map((topic) => (
                   <span
-                    key={topic}
+                    key={topic.topic}
                     className="rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-medium text-violet-700"
                   >
-                    {topic}
+                    {topic.topic}
+                    {topic.postCount != null ? ` · ${topic.postCount} posts` : ""}
+                    {topic.creatorCount != null ? ` · ${topic.creatorCount} creators` : ""}
                   </span>
                 ))}
               </div>
@@ -110,6 +139,31 @@ export function OverviewIntelligencePanels({
                     {item.tag} ({item.count})
                   </span>
                 ))}
+              </div>
+            </div>
+          )}
+          {marketInsights.hashtagSummary.length > 0 && (
+            <div className="mt-4">
+              <p className="mb-2 text-xs font-semibold text-slate-500">Hashtag Summary</p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-100 text-slate-400">
+                      <th className="px-2 py-1.5 font-semibold">Hashtag</th>
+                      <th className="px-2 py-1.5 font-semibold">Posts</th>
+                      <th className="px-2 py-1.5 font-semibold">Creators</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {marketInsights.hashtagSummary.slice(0, 20).map((item) => (
+                      <tr key={item.tag} className="border-b border-slate-50 text-slate-700">
+                        <td className="px-2 py-1.5 font-medium text-pink-700">{item.tag}</td>
+                        <td className="px-2 py-1.5">{item.postCount}</td>
+                        <td className="px-2 py-1.5">{item.creatorCount}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}

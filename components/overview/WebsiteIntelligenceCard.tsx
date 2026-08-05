@@ -76,6 +76,33 @@ export function WebsiteIntelligenceCard({ data }: WebsiteIntelligenceCardProps) 
           ))}
         </div>
       </div>
+
+      {data.seoKeywords.length > 0 && (
+        <div className="mt-4">
+          <p className="mb-2 text-xs font-semibold text-slate-500">SEO Keywords</p>
+          <div className="flex flex-wrap gap-1.5">
+            {data.seoKeywords.slice(0, 12).map((keyword) => (
+              <span
+                key={keyword}
+                className="rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700"
+              >
+                {keyword}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {data.url && (
+        <a
+          href={data.url}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-4 inline-block text-[11px] font-medium text-emerald-700 hover:text-emerald-800"
+        >
+          Open website →
+        </a>
+      )}
     </div>
   );
 }

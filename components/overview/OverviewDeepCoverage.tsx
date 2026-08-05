@@ -5,7 +5,6 @@ import type {
   OverviewCompetitorGaps,
   OverviewContentStrategyIntel,
   OverviewMarketingIntel,
-  OverviewPipelineStatus,
   OverviewPriorityGap,
   OverviewReviewIntel,
   OverviewRunMeta,
@@ -26,7 +25,6 @@ interface OverviewDeepCoverageProps {
   contentStrategyIntel?: OverviewContentStrategyIntel;
   competitorGaps?: OverviewCompetitorGaps;
   competitorWebsiteIntel: OverviewWebsiteIntelCard[];
-  pipelineStatus?: OverviewPipelineStatus;
 }
 
 export function OverviewDeepCoverage({
@@ -41,7 +39,6 @@ export function OverviewDeepCoverage({
   contentStrategyIntel,
   competitorGaps,
   competitorWebsiteIntel,
-  pipelineStatus,
 }: OverviewDeepCoverageProps) {
   return (
     <div className="space-y-5">
@@ -50,6 +47,7 @@ export function OverviewDeepCoverage({
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-6">
           <Meta label="Mode" value={runMeta.matchingMode ?? "—"} />
           <Meta label="Agent" value={runMeta.agentMode ?? "—"} />
+          <Meta label="Status" value={runMeta.status ?? "—"} />
           <Meta label="Region" value={runMeta.region ?? "—"} />
           <Meta
             label="Duration"
@@ -57,12 +55,16 @@ export function OverviewDeepCoverage({
           />
           <Meta label="Competitors" value={String(runMeta.competitorCount)} />
           <Meta label="Posts" value={String(runMeta.postCount)} />
+          <Meta label="Post limit" value={String(runMeta.postLimit ?? "—")} />
           <Meta label="Pool" value={String(runMeta.candidatePoolSize ?? "—")} />
           <Meta label="Verified" value={String(runMeta.verifiedCount ?? "—")} />
           <Meta label="Limit" value={String(runMeta.competitorLimit ?? "—")} />
           <Meta label="Skip LI" value={runMeta.skipLinkedIn ? "Yes" : "No"} />
+          <Meta label="Serverless" value={runMeta.serverless ? "Yes" : "No"} />
           <Meta label="Analysis ID" value={runMeta.analysisId ? `${runMeta.analysisId.slice(0, 8)}…` : "—"} />
+          <Meta label="Prompt ID" value={runMeta.promptId ? `${runMeta.promptId.slice(0, 8)}…` : "—"} />
           <Meta label="Source" value={runMeta.discoverySource ?? "—"} />
+          <Meta label="Timestamp" value={runMeta.timestamp ?? "—"} />
         </div>
         {runMeta.platforms.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
@@ -93,43 +95,23 @@ export function OverviewDeepCoverage({
             }
           />
           <Meta label="Countries" value={String(companyExtras.countries.length || "—")} />
+          <Meta label="City" value={companyExtras.city ?? "—"} />
+          <Meta label="Country" value={companyExtras.country ?? "—"} />
+          <Meta label="Source" value={companyExtras.source ?? "—"} />
+          <Meta label="LinkedIn user" value={companyExtras.linkedinUsername ?? "—"} />
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           <TagBlock title="Target industries" items={companyExtras.targetIndustries} />
           <TagBlock title="Competitors hint" items={companyExtras.competitorsHint} />
           <TagBlock title="Company signals" items={companyExtras.companySignals} />
           <TagBlock title="Extracted keywords" items={companyExtras.extractedKeywords} />
+          <TagBlock title="Flagship services" items={companyExtras.flagshipServices} />
+          <TagBlock title="Audience pain points" items={companyExtras.audiencePainPoints} />
+          <TagBlock title="Services" items={companyExtras.services} />
+          <TagBlock title="Technologies" items={companyExtras.technologies} />
           <TagBlock title="Countries" items={companyExtras.countries} />
         </div>
       </section>
-
-      {pipelineStatus && (
-        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
-          <h3 className="mb-3 text-sm font-semibold text-slate-800">Pipeline Status</h3>
-          <div className="mb-3 flex flex-wrap gap-2">
-            <Flag on={pipelineStatus.companyUnderstood} label="Company understood" />
-            <Flag on={pipelineStatus.websiteCrawled} label="Website crawled" />
-            <Flag on={pipelineStatus.instagramAnalyzed} label="Instagram analyzed" />
-            <Flag on={pipelineStatus.linkedinAnalyzed} label="LinkedIn analyzed" />
-          </div>
-          {pipelineStatus.detectedNiche && (
-            <p className="mb-3 text-xs text-slate-500">{pipelineStatus.detectedNiche}</p>
-          )}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <TagBlock title="Pipeline services" items={pipelineStatus.services} />
-            <TagBlock title="Pipeline technologies" items={pipelineStatus.technologies} />
-          </div>
-          {pipelineStatus.warnings.length > 0 && (
-            <ul className="mt-3 space-y-1">
-              {pipelineStatus.warnings.map((warning) => (
-                <li key={warning} className="text-xs text-amber-700">
-                  {warning}
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      )}
 
       {averageSimilarity && (
         <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
@@ -144,6 +126,24 @@ export function OverviewDeepCoverage({
             <SimilarityBar label="Industry" value={averageSimilarity.industry} />
             <SimilarityBar label="Pricing" value={averageSimilarity.pricing} />
             <SimilarityBar label="Audience" value={averageSimilarity.targetAudience} />
+            {averageSimilarity.products != null && (
+              <SimilarityBar label="Products" value={averageSimilarity.products} />
+            )}
+            {averageSimilarity.geography != null && (
+              <SimilarityBar label="Geography" value={averageSimilarity.geography} />
+            )}
+            {averageSimilarity.socialStrategy != null && (
+              <SimilarityBar label="Social strategy" value={averageSimilarity.socialStrategy} />
+            )}
+            {averageSimilarity.contentStrategy != null && (
+              <SimilarityBar label="Content strategy" value={averageSimilarity.contentStrategy} />
+            )}
+            {averageSimilarity.businessModel != null && (
+              <SimilarityBar label="Business model" value={averageSimilarity.businessModel} />
+            )}
+            {averageSimilarity.positioning != null && (
+              <SimilarityBar label="Positioning" value={averageSimilarity.positioning} />
+            )}
           </div>
         </section>
       )}

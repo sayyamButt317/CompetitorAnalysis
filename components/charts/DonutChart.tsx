@@ -42,7 +42,7 @@ export function DonutChart({
   });
 
   return (
-    <div className="flex w-full items-center gap-6">
+    <div className="flex w-full min-w-0 flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-6">
       <div className="relative shrink-0" style={{ width: size, height: size }}>
         <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
           <circle
@@ -76,15 +76,17 @@ export function DonutChart({
         </div>
       </div>
 
-      <ul className="flex flex-1 flex-col gap-2">
+      <ul className="grid min-w-0 flex-1 grid-cols-1 gap-2 sm:grid-cols-2">
         {slices.map((slice, index) => (
-          <li key={`${slice.label}-${index}`} className="flex items-center justify-between gap-2 text-xs">
-            <div className="flex items-center gap-2 min-w-0">
+          <li key={`${slice.label}-${index}`} className="flex min-w-0 items-center justify-between gap-2 text-xs">
+            <div className="flex min-w-0 items-center gap-2">
               <span
                 className="h-2.5 w-2.5 shrink-0 rounded-full"
                 style={{ backgroundColor: slice.color }}
               />
-              <span className="truncate text-slate-600">{slice.label}</span>
+              <span className="truncate text-slate-600" title={slice.label}>
+                {slice.label}
+              </span>
             </div>
             <span className="shrink-0 font-medium text-slate-800">{slice.pct}%</span>
           </li>

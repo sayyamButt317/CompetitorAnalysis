@@ -8,6 +8,7 @@ import { OverviewHero } from "@/components/overview/OverviewHero";
 import { OverviewIntelligencePanels } from "@/components/overview/OverviewIntelligencePanels";
 import { OverviewMediaRail } from "@/components/overview/OverviewMediaRail";
 import { OverviewMetricCards } from "@/components/overview/OverviewMetricCards";
+import { OverviewPayloadExtras } from "@/components/overview/OverviewPayloadExtras";
 import { WebsiteIntelligenceCard } from "@/components/overview/WebsiteIntelligenceCard";
 import type { OverviewPageData } from "@/types/overview";
 
@@ -105,7 +106,13 @@ export function OverviewView({ data }: OverviewViewProps) {
         contentStrategyIntel={data.contentStrategyIntel}
         competitorGaps={data.competitorGaps}
         competitorWebsiteIntel={data.competitorWebsiteIntel}
-        pipelineStatus={data.pipelineStatus}
+      />
+
+      <OverviewPayloadExtras
+        website={data.website}
+        runMeta={data.runMeta}
+        linkedInMarket={data.linkedInMarket}
+        reportExtras={data.reportExtras}
       />
 
       <p className="pb-2 text-center text-xs text-slate-400">

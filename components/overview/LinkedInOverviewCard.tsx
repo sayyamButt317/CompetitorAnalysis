@@ -36,7 +36,55 @@ export function LinkedInOverviewCard({ data }: LinkedInOverviewCardProps) {
         <MiniStat label="Thought Leadership" value={data.thoughtLeadershipLabel} />
         <MiniStat label="Open roles" value={String(data.openRoles)} />
         <MiniStat label="Avg post length" value={String(data.avgPostLength ?? "—")} />
+        <MiniStat label="TL posts" value={String(data.thoughtLeadershipPosts ?? "—")} />
+        <MiniStat label="Company size" value={data.companySize ?? "—"} />
       </div>
+
+      {(data.industry || data.headquarters || data.tagline) && (
+        <div className="mb-4 space-y-2">
+          {data.industry && (
+            <p className="text-xs text-slate-600">
+              <span className="font-semibold text-slate-500">Industry:</span> {data.industry}
+            </p>
+          )}
+          {data.headquarters && (
+            <p className="text-xs text-slate-600">
+              <span className="font-semibold text-slate-500">HQ:</span> {data.headquarters}
+            </p>
+          )}
+          {data.tagline && (
+            <p className="line-clamp-4 text-xs leading-relaxed text-slate-600">{data.tagline}</p>
+          )}
+        </div>
+      )}
+
+      {data.specialties.length > 0 && (
+        <div className="mb-4 flex flex-wrap gap-1.5">
+          {data.specialties.map((item) => (
+            <span
+              key={item}
+              className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-700"
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {data.signalFlags.some((flag) => flag.active) && (
+        <div className="mb-4 flex flex-wrap gap-1.5">
+          {data.signalFlags
+            .filter((flag) => flag.active)
+            .map((flag) => (
+              <span
+                key={flag.label}
+                className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700"
+              >
+                {flag.label}
+              </span>
+            ))}
+        </div>
+      )}
 
       {data.positioningFocus.length > 0 && (
         <div className="mb-4 flex flex-wrap gap-1.5">

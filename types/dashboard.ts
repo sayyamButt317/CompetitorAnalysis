@@ -165,6 +165,9 @@ export interface GapAnalysisView {
   formats: ChartSegment[];
   themes: ChartSegment[];
   categories: ChartSegment[];
+  competitorCount?: number;
+  contentProfilesAnalyzed?: number;
+  websitesAnalyzed?: number;
 }
 
 export interface SimilarityRow {

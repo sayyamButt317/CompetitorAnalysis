@@ -126,7 +126,7 @@ export function TopCompetitorsStrip({ competitors }: TopCompetitorsStripProps) {
                 rel="noreferrer"
                 className="mt-3 inline-block text-xs font-medium text-indigo-600 hover:text-indigo-700"
               >
-                View Analysis →
+                View Profile →
               </a>
             ) : (
               <p className="mt-3 text-xs text-slate-400">Analysis pending</p>
