@@ -229,34 +229,38 @@ function buildDna(response: CompetitorAnalysisResponse): OverviewDnaColumn[] {
   const swot = response.analysis?.swot;
   const extracted = response.company?.extracted_signals;
 
-  const services =
+  const services = uniqueStrings(
     profile?.flagship_services ??
-    profile?.services ??
-    response.company?.flagship_services ??
-    dna?.services ??
-    analysis?.services ??
-    extracted?.services ??
-    [];
-  const technologies =
-    profile?.technologies?.filter((t) => t.length > 1) ??
-    extracted?.technologies?.filter((t) => t.length > 1) ??
-    dna?.technologies?.filter((t) => t.length > 1) ??
-    analysis?.technologies ??
-    [];
-  const audience =
+      profile?.services ??
+      response.company?.flagship_services ??
+      dna?.services ??
+      analysis?.services ??
+      extracted?.services ??
+      [],
+  );
+  const technologies = uniqueStrings(
+    profile?.technologies ??
+      extracted?.technologies ??
+      dna?.technologies ??
+      analysis?.technologies ??
+      [],
+  );
+  const audience = uniqueStrings(
     profile?.target_audience ??
-    dna?.target_audience ??
-    analysis?.target_audience ??
-    profile?.target_industries ??
-    extracted?.target_industries ??
-    [];
-  const strengths = swot?.strengths ?? [];
-  const keywords =
+      dna?.target_audience ??
+      analysis?.target_audience ??
+      profile?.target_industries ??
+      extracted?.target_industries ??
+      [],
+  );
+  const strengths = uniqueStrings(swot?.strengths ?? []);
+  const keywords = uniqueStrings(
     profile?.keywords ??
-    extracted?.keywords ??
-    dna?.keywords ??
-    analysis?.keywords ??
-    [];
+      extracted?.keywords ??
+      dna?.keywords ??
+      analysis?.keywords ??
+      [],
+  );
 
   const serviceList = truncateList(services, 8);
   const techList = truncateList(technologies, 10);
@@ -610,13 +614,15 @@ function buildWebsite(response: CompetitorAnalysisResponse): OverviewWebsiteSect
         score: Math.min(100, services.length * 10),
       },
     ],
-    seoKeywords: keywords,
-    seoKeywordGaps: seo?.keyword_gaps ?? [],
-    seoIndustryTerms: seo?.industry_terms ?? search?.industry_terms ?? [],
-    seoProductTerms: seo?.product_terms ?? search?.product_terms ?? [],
-    seoAudienceTerms: seo?.audience_terms ?? search?.audience_terms ?? [],
-    seoCompetitorPatterns: seo?.competitor_patterns ?? search?.competitor_patterns ?? [],
-    seoSearchQueries: seo?.search_queries ?? search?.search_queries ?? [],
+    seoKeywords: uniqueStrings(keywords),
+    seoKeywordGaps: uniqueStrings(seo?.keyword_gaps ?? []),
+    seoIndustryTerms: uniqueStrings(seo?.industry_terms ?? search?.industry_terms ?? []),
+    seoProductTerms: uniqueStrings(seo?.product_terms ?? search?.product_terms ?? []),
+    seoAudienceTerms: uniqueStrings(seo?.audience_terms ?? search?.audience_terms ?? []),
+    seoCompetitorPatterns: uniqueStrings(
+      seo?.competitor_patterns ?? search?.competitor_patterns ?? [],
+    ),
+    seoSearchQueries: uniqueStrings(seo?.search_queries ?? search?.search_queries ?? []),
     webCrawlAvailable,
     available: Boolean(
       profile?.website ||
@@ -1065,7 +1071,23 @@ function buildSearchIntelligence(
 
 function asStringList(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
-  return value.map((item) => String(item)).filter(Boolean);
+  return value
+    .map((item) => String(item).trim())
+    .filter((item) => item.length > 1);
+}
+
+function uniqueStrings(values: string[] | undefined | null): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const raw of values ?? []) {
+    const item = String(raw).trim();
+    if (item.length <= 1) continue;
+    const key = item.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(item);
+  }
+  return result;
 }
 
 function buildPriorityGaps(response: CompetitorAnalysisResponse): OverviewPriorityGap[] {
@@ -1360,14 +1382,14 @@ function buildCompetitorWebsiteIntel(
       businessModel: typeof intel.business_model === "string" ? intel.business_model : undefined,
       pricingModel: typeof intel.pricing_model === "string" ? intel.pricing_model : undefined,
       confidence: typeof intel.confidence === "number" ? intel.confidence : undefined,
-      services: asStringList(intel.services).slice(0, 10),
-      technologies: asStringList(intel.technologies).slice(0, 10),
-      products: asStringList(intel.products).slice(0, 8),
-      industries: asStringList(intel.industries).slice(0, 8),
-      targetAudience: asStringList(intel.target_audience).slice(0, 8),
-      keywords: asStringList(intel.keywords).slice(0, 10),
-      features: asStringList(intel.features).slice(0, 8),
-      socialLinks: asStringList(intel.social_links).slice(0, 6),
+      services: uniqueStrings(asStringList(intel.services)).slice(0, 10),
+      technologies: uniqueStrings(asStringList(intel.technologies)).slice(0, 10),
+      products: uniqueStrings(asStringList(intel.products)).slice(0, 8),
+      industries: uniqueStrings(asStringList(intel.industries)).slice(0, 8),
+      targetAudience: uniqueStrings(asStringList(intel.target_audience)).slice(0, 8),
+      keywords: uniqueStrings(asStringList(intel.keywords)).slice(0, 10),
+      features: uniqueStrings(asStringList(intel.features)).slice(0, 8),
+      socialLinks: uniqueStrings(asStringList(intel.social_links)).slice(0, 6),
     };
   });
 }
@@ -1412,39 +1434,46 @@ function buildCompanyExtras(response: CompetitorAnalysisResponse): OverviewCompa
       profile?.linkedin_username ??
       signals?.linkedin_username ??
       undefined,
-    competitorsHint: profile?.competitors_hint ?? analysis?.competitors_hint ?? [],
-    targetIndustries:
+    competitorsHint: uniqueStrings(profile?.competitors_hint ?? analysis?.competitors_hint ?? []),
+    targetIndustries: uniqueStrings(
       profile?.target_industries ??
-      signals?.target_industries ??
-      response.company?.extracted_signals?.target_industries ??
-      [],
-    countries: profile?.countries ?? analysis?.countries ?? [],
-    companySignals: [
+        signals?.target_industries ??
+        response.company?.extracted_signals?.target_industries ??
+        [],
+    ),
+    countries: uniqueStrings(profile?.countries ?? analysis?.countries ?? []),
+    companySignals: uniqueStrings([
       ...(signals?.services ?? []).slice(0, 6),
       ...(signals?.technologies ?? []).slice(0, 4),
-    ],
-    extractedKeywords:
+    ]),
+    extractedKeywords: uniqueStrings(
       profile?.extracted_keywords ??
-      signals?.keywords ??
-      response.company?.extracted_signals?.keywords ??
-      [],
-    flagshipServices:
+        signals?.keywords ??
+        response.company?.extracted_signals?.keywords ??
+        [],
+    ),
+    flagshipServices: uniqueStrings(
       profile?.flagship_services ??
-      signals?.flagship_services ??
-      response.company?.flagship_services ??
-      [],
-    audiencePainPoints: response.company_social_analysis?.audience_pain_points ?? [],
-    services:
+        signals?.flagship_services ??
+        response.company?.flagship_services ??
+        [],
+    ),
+    audiencePainPoints: uniqueStrings(
+      response.company_social_analysis?.audience_pain_points ?? [],
+    ),
+    services: uniqueStrings(
       profile?.services ??
-      response.company?.services ??
-      analysis?.services ??
-      dna?.services ??
-      [],
-    technologies:
+        response.company?.services ??
+        analysis?.services ??
+        dna?.services ??
+        [],
+    ),
+    technologies: uniqueStrings(
       profile?.technologies ??
-      analysis?.technologies ??
-      dna?.technologies ??
-      [],
+        analysis?.technologies ??
+        dna?.technologies ??
+        [],
+    ),
   };
 }
 
@@ -1732,9 +1761,11 @@ export function mapApiResponseToOverview(
     marketInsights: buildMarketInsights(response),
     searchIntelligence: buildSearchIntelligence(response),
     runMeta: buildRunMeta(response, competitors.length),
-    companyKeywords: profile?.keywords ?? company?.extracted_signals?.keywords ?? analysis?.keywords ?? [],
-    companyProducts: profile?.products ?? analysis?.products ?? [],
-    companyFeatures: profile?.features ?? analysis?.features ?? [],
+    companyKeywords: uniqueStrings(
+      profile?.keywords ?? company?.extracted_signals?.keywords ?? analysis?.keywords ?? [],
+    ),
+    companyProducts: uniqueStrings(profile?.products ?? analysis?.products ?? []),
+    companyFeatures: uniqueStrings(profile?.features ?? analysis?.features ?? []),
     companyExtras: buildCompanyExtras(response),
     linkedInMarket: buildLinkedInMarket(response),
     reportExtras: buildReportExtras(response),

@@ -478,9 +478,9 @@ function TagBlock({ title, items }: { title: string; items: string[] }) {
     <div>
       <p className="mb-2 text-xs font-semibold text-slate-500">{title}</p>
       <div className="flex flex-wrap gap-1.5">
-        {items.slice(0, 20).map((item) => (
+        {items.slice(0, 20).map((item, index) => (
           <span
-            key={item}
+            key={`${item}-${index}`}
             className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700"
           >
             {item}

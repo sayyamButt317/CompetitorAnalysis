@@ -15,9 +15,9 @@ function GapChips({ title, items }: { title: string; items: string[] }) {
         <p className="text-xs text-slate-400">No gaps detected</p>
       ) : (
         <div className="flex flex-wrap gap-1.5">
-          {items.map((item) => (
+          {items.map((item, index) => (
             <span
-              key={item}
+              key={`${item}-${index}`}
               className="rounded-md border border-rose-100 bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-700"
             >
               {item}

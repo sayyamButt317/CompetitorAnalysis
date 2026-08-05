@@ -52,9 +52,9 @@ export function WebsiteIntelligenceCard({ data }: WebsiteIntelligenceCardProps) 
         <div className="mb-4">
           <p className="mb-2 text-xs font-semibold text-slate-500">Technologies Detected</p>
           <div className="flex flex-wrap gap-1.5">
-            {data.technologies.map((tech) => (
+            {data.technologies.map((tech, index) => (
               <span
-                key={tech}
+                key={`${tech}-${index}`}
                 className="rounded-md bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-700"
               >
                 {tech}
@@ -81,9 +81,9 @@ export function WebsiteIntelligenceCard({ data }: WebsiteIntelligenceCardProps) 
         <div className="mt-4">
           <p className="mb-2 text-xs font-semibold text-slate-500">SEO Keywords</p>
           <div className="flex flex-wrap gap-1.5">
-            {data.seoKeywords.slice(0, 12).map((keyword) => (
+            {data.seoKeywords.slice(0, 12).map((keyword, index) => (
               <span
-                key={keyword}
+                key={`${keyword}-${index}`}
                 className="rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700"
               >
                 {keyword}
@@ -93,16 +93,7 @@ export function WebsiteIntelligenceCard({ data }: WebsiteIntelligenceCardProps) 
         </div>
       )}
 
-      {data.url && (
-        <a
-          href={data.url}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-4 inline-block text-[11px] font-medium text-emerald-700 hover:text-emerald-800"
-        >
-          Open website →
-        </a>
-      )}
+
     </div>
   );
 }

@@ -191,9 +191,9 @@ export function OverviewCompetitorMatch({
 
             {competitor.topHashtags.length > 0 && (
               <div className="mb-4 flex flex-wrap gap-1.5">
-                {competitor.topHashtags.map((tag) => (
+                {competitor.topHashtags.map((tag, index) => (
                   <span
-                    key={tag}
+                    key={`${tag}-${index}`}
                     className="rounded-full bg-pink-50 px-2 py-0.5 text-[10px] font-medium text-pink-700"
                   >
                     {tag}
@@ -208,9 +208,9 @@ export function OverviewCompetitorMatch({
                   Content themes
                 </p>
                 <div className="flex flex-wrap gap-1.5">
-                  {competitor.contentThemes.map((theme) => (
+                  {competitor.contentThemes.map((theme, index) => (
                     <span
-                      key={theme}
+                      key={`${theme}-${index}`}
                       className="rounded-md bg-violet-50 px-2 py-0.5 text-[10px] font-medium text-violet-700"
                     >
                       {theme}

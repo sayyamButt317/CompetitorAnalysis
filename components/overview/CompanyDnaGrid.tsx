@@ -18,9 +18,9 @@ export function CompanyDnaGrid({ columns }: CompanyDnaGridProps) {
               <p className="text-xs text-slate-400">No data yet</p>
             ) : column.variant === "tags" ? (
               <div className="flex flex-wrap gap-1.5">
-                {column.items.map((item) => (
+                {column.items.map((item, index) => (
                   <span
-                    key={item}
+                    key={`${item}-${index}`}
                     className="rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700"
                   >
                     {item}
@@ -29,8 +29,8 @@ export function CompanyDnaGrid({ columns }: CompanyDnaGridProps) {
               </div>
             ) : (
               <ul className="space-y-2">
-                {column.items.map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm text-slate-700">
+                {column.items.map((item, index) => (
+                  <li key={`${item}-${index}`} className="flex items-start gap-2 text-sm text-slate-700">
                     <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
                       <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />

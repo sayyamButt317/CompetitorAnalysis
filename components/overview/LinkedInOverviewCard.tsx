@@ -60,9 +60,9 @@ export function LinkedInOverviewCard({ data }: LinkedInOverviewCardProps) {
 
       {data.specialties.length > 0 && (
         <div className="mb-4 flex flex-wrap gap-1.5">
-          {data.specialties.map((item) => (
+          {data.specialties.map((item, index) => (
             <span
-              key={item}
+              key={`${item}-${index}`}
               className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-700"
             >
               {item}
@@ -88,9 +88,9 @@ export function LinkedInOverviewCard({ data }: LinkedInOverviewCardProps) {
 
       {data.positioningFocus.length > 0 && (
         <div className="mb-4 flex flex-wrap gap-1.5">
-          {data.positioningFocus.map((item) => (
+          {data.positioningFocus.map((item, index) => (
             <span
-              key={item}
+              key={`${item}-${index}`}
               className="rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-medium text-sky-700"
             >
               {item}
@@ -103,9 +103,9 @@ export function LinkedInOverviewCard({ data }: LinkedInOverviewCardProps) {
         <div className="mb-4">
           <p className="mb-2 text-xs font-semibold text-slate-500">Business Signals</p>
           <div className="flex flex-wrap gap-1.5">
-            {data.businessSignals.map((signal) => (
+            {data.businessSignals.map((signal, index) => (
               <span
-                key={signal}
+                key={`${signal}-${index}`}
                 className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700"
               >
                 {signal}
