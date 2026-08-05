@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import type { CompetitorAnalysisRequest } from "@/types/api";
+import { CompanyLogo } from "@/components/ui/CompanyLogo";
+import { APP_COMPANY } from "@/lib/app-brand";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 
@@ -9,6 +11,7 @@ interface AnalysisSetupModalProps {
   open: boolean;
   loading?: boolean;
   error?: string | null;
+  onClose?: () => void;
   onSubmit: (payload: CompetitorAnalysisRequest) => void;
 }
 
@@ -23,29 +26,49 @@ export function AnalysisSetupModal({
   open,
   loading = false,
   error,
+  onClose,
   onSubmit,
 }: AnalysisSetupModalProps) {
   const [companyData, setCompanyData] = useState("");
   const [region, setRegion] = useState("");
+  const [instagramUsername, setInstagramUsername] = useState("");
+  const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [competitorLimit, setCompetitorLimit] = useState(10);
   const [competitorsRaw, setCompetitorsRaw] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
+
+    const payload: CompetitorAnalysisRequest = {
       company_data: companyData.trim(),
       region: region.trim(),
       competitors: parseCompetitors(competitorsRaw),
-    });
+      competitor_limit: competitorLimit,
+    };
+
+    if (instagramUsername.trim()) {
+      payload.instagram_username = instagramUsername.trim().replace(/^@/, "");
+    }
+    if (linkedinUrl.trim()) {
+      payload.linkedin_url = linkedinUrl.trim();
+    }
+
+    onSubmit(payload);
   };
 
   return (
     <Modal
       open={open}
-      scoped
+      closable={!loading}
+      onClose={onClose}
       title="Start Competitor Analysis"
-      description="Enter your company details and target region. Optionally add specific competitor handles."
+      description="Enter your company details, social profiles, and target region. Optionally add specific competitor handles."
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="max-h-[70vh] space-y-4 overflow-y-auto pr-1">
+        <div className="flex justify-center pb-2">
+          <CompanyLogo variant="full" theme="light" name={APP_COMPANY.name} />
+        </div>
+
         <div>
           <label htmlFor="company_data" className="mb-1.5 block text-sm font-medium text-slate-700">
             Company Details
@@ -63,20 +86,65 @@ export function AnalysisSetupModal({
           <p className="mt-1 text-xs text-slate-400">Minimum 20 characters</p>
         </div>
 
-        <div>
-          <label htmlFor="region" className="mb-1.5 block text-sm font-medium text-slate-700">
-            Region
-          </label>
-          <input
-            id="region"
-            type="text"
-            required
-            minLength={2}
-            value={region}
-            onChange={(e) => setRegion(e.target.value)}
-            placeholder="e.g. GCC, MENA, North America"
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-          />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label htmlFor="region" className="mb-1.5 block text-sm font-medium text-slate-700">
+              Region
+            </label>
+            <input
+              id="region"
+              type="text"
+              required
+              minLength={2}
+              value={region}
+              onChange={(e) => setRegion(e.target.value)}
+              placeholder="e.g. GCC, MENA, North America"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+            />
+          </div>
+          <div>
+            <label htmlFor="competitor_limit" className="mb-1.5 block text-sm font-medium text-slate-700">
+              Competitor Limit
+            </label>
+            <input
+              id="competitor_limit"
+              type="number"
+              min={1}
+              max={50}
+              value={competitorLimit}
+              onChange={(e) => setCompetitorLimit(Number(e.target.value))}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label htmlFor="instagram_username" className="mb-1.5 block text-sm font-medium text-slate-700">
+              Instagram Username <span className="font-normal text-slate-400">(optional)</span>
+            </label>
+            <input
+              id="instagram_username"
+              type="text"
+              value={instagramUsername}
+              onChange={(e) => setInstagramUsername(e.target.value)}
+              placeholder="@yourbrand"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+            />
+          </div>
+          <div>
+            <label htmlFor="linkedin_url" className="mb-1.5 block text-sm font-medium text-slate-700">
+              LinkedIn URL <span className="font-normal text-slate-400">(optional)</span>
+            </label>
+            <input
+              id="linkedin_url"
+              type="url"
+              value={linkedinUrl}
+              onChange={(e) => setLinkedinUrl(e.target.value)}
+              placeholder="https://www.linkedin.com/company/..."
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+            />
+          </div>
         </div>
 
         <div>

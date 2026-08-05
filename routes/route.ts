@@ -1,4 +1,10 @@
-import type { CompetitorAnalysisRequest, CompetitorAnalysisResponse } from "@/types/api";
+import type {
+  CompetitorAnalysisAsyncJobResponse,
+  CompetitorAnalysisJobPollResponse,
+  CompetitorAnalysisRequest,
+  CompetitorAnalysisResponse,
+  CompetitorAnalysisResultsResponse,
+} from "@/types/api";
 import type { CompetitorsListResponse } from "@/types/competitors";
 import type { ContentListResponse } from "@/types/content";
 import type { HashtagListResponse } from "@/types/hashtag";
@@ -26,9 +32,47 @@ import {
 import { parseJsonResponse } from "@/lib/parse-json-response";
 import { Endpoint } from "./endpoint";
 
-export const CompetitorAnalysisApi = async (
+const JOB_POLL_INTERVAL_MS = 15_000;
+const JOB_POLL_TIMEOUT_MS = 15 * 60 * 1000;
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function normalizeJobStatus(status?: string): string {
+  return (status ?? "").toLowerCase().trim();
+}
+
+function isJobComplete(status?: string): boolean {
+  const value = normalizeJobStatus(status);
+  return value === "completed" || value === "success" || value === "done";
+}
+
+function isJobFailed(status?: string): boolean {
+  const value = normalizeJobStatus(status);
+  return value === "failed" || value === "error" || value === "cancelled";
+}
+
+function extractAnalysisResult(
+  poll: CompetitorAnalysisJobPollResponse,
+): CompetitorAnalysisResponse | null {
+  if (poll.result && typeof poll.result === "object") return poll.result;
+  if (poll.data && typeof poll.data === "object") return poll.data;
+
+  if (
+    isJobComplete(poll.status) &&
+    ("competitors" in poll || "company_profile" in poll || "market_insights" in poll)
+  ) {
+    return poll as unknown as CompetitorAnalysisResponse;
+  }
+
+  return null;
+}
+
+
+export const startCompetitorAnalysisJob = async (
   payload: CompetitorAnalysisRequest,
-): Promise<CompetitorAnalysisResponse> => {
+): Promise<CompetitorAnalysisAsyncJobResponse> => {
   const response = await fetch(Endpoint.COMPETITORANALYSISAPI, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -36,11 +80,95 @@ export const CompetitorAnalysisApi = async (
   });
 
   const data = await parseJsonResponse<
-    CompetitorAnalysisResponse & { error?: string; detail?: unknown }
+    CompetitorAnalysisAsyncJobResponse & { error?: string; detail?: unknown }
+  >(response);
+
+  if (!response.ok) throw new Error(formatApiError(data));
+
+  const jobId = data.job_id;
+  if (!jobId) {
+    throw new Error("Async analysis did not return a job_id");
+  }
+
+  return data;
+};
+
+export const fetchCompetitorAnalysisJob = async (
+  jobId: string,
+): Promise<CompetitorAnalysisJobPollResponse> => {
+  const response = await fetch(Endpoint.POLLEDCOMPETITORANALYSISJOBS(jobId), {
+    cache: "no-store",
+  });
+
+  const data = await parseJsonResponse<
+    CompetitorAnalysisJobPollResponse & { error?: string; detail?: unknown }
   >(response);
 
   if (!response.ok) throw new Error(formatApiError(data));
   return data;
+};
+
+export const fetchCompetitorAnalysisResults = async (): Promise<CompetitorAnalysisResultsResponse> => {
+  const response = await fetch(Endpoint.COMPETITORANALYSISRESULTS, {
+    cache: "no-store",
+  });
+  const data = await parseJsonResponse<
+    CompetitorAnalysisResultsResponse & { error?: string; detail?: unknown }
+  >(response);
+  if (!response.ok) throw new Error(formatApiError(data));
+  return data;
+};
+
+
+export const CompetitorAnalysisApi = async (
+  payload: CompetitorAnalysisRequest,
+  options?: {
+    onJobStarted?: (job: CompetitorAnalysisAsyncJobResponse) => void;
+    onPoll?: (job: CompetitorAnalysisJobPollResponse) => void;
+    signal?: AbortSignal;
+  },
+): Promise<CompetitorAnalysisResponse> => {
+  const started = await startCompetitorAnalysisJob(payload);
+  options?.onJobStarted?.(started);
+
+  const jobId = started.job_id;
+  const startedAt = Date.now();
+
+  while (Date.now() - startedAt < JOB_POLL_TIMEOUT_MS) {
+    if (options?.signal?.aborted) {
+      throw new Error("Analysis cancelled");
+    }
+
+    await sleep(JOB_POLL_INTERVAL_MS);
+
+    const poll = await fetchCompetitorAnalysisJob(jobId);
+    options?.onPoll?.(poll);
+
+    if (isJobFailed(poll.status) || poll.error) {
+      throw new Error(
+        typeof poll.error === "string" && poll.error
+          ? poll.error
+          : formatApiError({
+              error: poll.error ?? undefined,
+              detail: poll.detail,
+            }) || `Analysis job failed (${poll.status ?? "error"})`,
+      );
+    }
+
+    const result = extractAnalysisResult(poll);
+    if (result && (isJobComplete(poll.status) || result.success || result.competitors?.length)) {
+      if (result.error && !result.competitors?.length) {
+        throw new Error(result.error);
+      }
+      return result;
+    }
+
+    if (isJobComplete(poll.status) && !result) {
+      return fetchCompetitorAnalysisResults();
+    }
+  }
+
+  throw new Error("Analysis timed out while waiting for the job to complete");
 };
 
 export const fetchCompetitorsList = async (): Promise<CompetitorsListResponse> => {

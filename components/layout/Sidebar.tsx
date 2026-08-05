@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { CompanyLogo } from "@/components/ui/CompanyLogo";
+import { APP_COMPANY } from "@/lib/app-brand";
 import type { NavItem } from "@/types/dashboard";
 
 const navIcons: Record<string, React.ReactNode> = {
@@ -42,17 +44,14 @@ interface SidebarProps {
   company: { name: string; logoInitials: string };
 }
 
-export function Sidebar({ items, company }: SidebarProps) {
+export function Sidebar({ items }: SidebarProps) {
   const pathname = usePathname();
 
   return (
     <aside className="sticky top-0 z-20 flex h-screen w-56 shrink-0 flex-col overflow-y-auto bg-[#1a1f36] text-slate-300">
-      <div className="flex items-center gap-2.5 px-5 py-5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
-          {company.logoInitials}
-        </div>
-        <span className="text-sm font-semibold text-white">Techtimize</span>
-      </div>
+      <Link href="/" className="block px-4 py-5">
+        <CompanyLogo variant="full" theme="dark" name={APP_COMPANY.name} />
+      </Link>
 
       <nav className="flex-1 space-y-0.5 px-3">
         {items.map((item) => {
@@ -77,12 +76,10 @@ export function Sidebar({ items, company }: SidebarProps) {
 
       <div className="mx-3 mb-3 rounded-lg border border-white/10 bg-white/5 p-3">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-xs font-bold text-white">
-            {company.logoInitials}
-          </div>
+          <CompanyLogo variant="icon" theme="dark" name={APP_COMPANY.name} />
           <div className="min-w-0">
-            <p className="truncate text-xs font-semibold text-white">{company.name}</p>
-            <p className="truncate text-[10px] text-slate-400">AI Development</p>
+            <p className="truncate text-xs font-semibold text-white">{APP_COMPANY.name}</p>
+            <p className="truncate text-[10px] text-slate-400">{APP_COMPANY.subtitle}</p>
           </div>
         </div>
       </div>

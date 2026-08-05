@@ -22,6 +22,8 @@ export interface CompetitorRow {
   posts: number;
   growth: number;
   imageUrl?: string;
+  matchScore?: number;
+  website?: string;
 }
 
 export interface ChartSegment {
@@ -74,6 +76,102 @@ export interface CompetitorPostsGroup {
   posts: SocialPost[];
 }
 
+export interface CompanyProfileView {
+  name: string;
+  industry?: string;
+  niche?: string;
+  description?: string;
+  positioning?: string;
+  valueProposition?: string;
+  region?: string;
+  services: string[];
+  technologies: string[];
+  keywords: string[];
+  targetAudience: string[];
+  instagramUrl?: string;
+  linkedinUrl?: string;
+  website?: string;
+}
+
+export interface CompanyInstagramView {
+  username?: string;
+  name?: string;
+  bio?: string;
+  followers: number;
+  postCount: number;
+  avgEngagement: number;
+  primaryFormat?: string;
+  primaryCategory?: string;
+  niche?: string;
+  topHashtags: string[];
+  mediaMix: ChartSegment[];
+}
+
+export interface CompanyLinkedInView {
+  url?: string;
+  postCount: number;
+  employeeCount: number;
+  followers?: number;
+  isHiring: boolean;
+  thoughtLeadershipScore: number;
+  industry?: string;
+  specialties: string[];
+  businessSignals: string[];
+  themes: { theme: string; count: number }[];
+  employees: { name: string; designation: string; url?: string }[];
+  warnings: string[];
+  skipped?: boolean;
+}
+
+export interface CompetitorLinkedInRow {
+  name: string;
+  url?: string;
+  followers: number;
+  employeeCount: number;
+  postCount: number;
+  isHiring: boolean;
+  thoughtLeadershipScore: number;
+  industry?: string;
+  businessSignals: string[];
+  themes: string[];
+}
+
+export interface RecommendationItem {
+  type: string;
+  priority: "high" | "medium" | "low";
+  title: string;
+  detail: string;
+}
+
+export interface GapAnalysisView {
+  summary?: string;
+  serviceGaps: string[];
+  technologyGaps: string[];
+  keywordGaps: string[];
+  formats: ChartSegment[];
+  themes: ChartSegment[];
+  categories: ChartSegment[];
+}
+
+export interface SimilarityRow {
+  name: string;
+  username?: string;
+  website?: string;
+  overall: number;
+  services: number;
+  technology: number;
+  marketing: number;
+  content: number;
+  location: number;
+}
+
+export interface SwotView {
+  strengths: string[];
+  weaknesses: string[];
+  opportunities: string[];
+  threats: string[];
+}
+
 export interface DashboardData {
   company: {
     name: string;
@@ -81,11 +179,13 @@ export interface DashboardData {
     logoInitials: string;
   };
   lastUpdated: string;
+  summary?: string;
   stats: StatMetric[];
   topCompetitors: CompetitorRow[];
   engagementShare: ChartSegment[];
   contentTypes: ChartSegment[];
   contentThemes: ChartSegment[];
+  contentCategories: ChartSegment[];
   postingActivity: BarChartItem[];
   hashtags: HashtagItem[];
   trendingTopics: string[];
@@ -95,4 +195,13 @@ export interface DashboardData {
   aiInsights: string[];
   topPosts: SocialPost[];
   competitorPosts: CompetitorPostsGroup[];
+  companyProfile?: CompanyProfileView;
+  companyInstagram?: CompanyInstagramView;
+  companyLinkedIn?: CompanyLinkedInView;
+  competitorLinkedIn: CompetitorLinkedInRow[];
+  recommendations: RecommendationItem[];
+  gapAnalysis?: GapAnalysisView;
+  similarityScores: SimilarityRow[];
+  swot?: SwotView;
+  discoveryReasoning?: string;
 }

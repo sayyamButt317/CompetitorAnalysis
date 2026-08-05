@@ -1,3 +1,4 @@
+import { APP_COMPANY } from "@/lib/app-brand";
 import type { BarChartItem, ChartSegment, HashtagItem } from "@/types/dashboard";
 import type {
   CountryGoogleTrends,
@@ -890,7 +891,7 @@ function mapTrendScores(
 
     return {
       rank: index + 1,
-      label: `${typeLabel}-${item.key}`,
+      label: `${typeLabel}-${item.key}-${item.geo ?? item.geo_label ?? index}`,
       displayLabel: item.group_type === "hashtag" ? formatHashtag(item.key) : item.key,
       metric: String(item.trend_score ?? item.traffic_score ?? item.post_count ?? 0),
       sublabel: [typeLabel, sourceName].filter(Boolean).join(" · "),
@@ -1167,8 +1168,8 @@ export function mapGlobalTrendsToPage(response: GlobalTrendsResponse): TrendsPag
 
   return {
     company: {
-      name: "Techtimize",
-      logoInitials: "Tr",
+      name: APP_COMPANY.name,
+      logoInitials: APP_COMPANY.logoInitials,
       subtitle: `${sourceCount} sources · Google, Reddit, X, Facebook, LinkedIn`,
     },
     lastUpdated,

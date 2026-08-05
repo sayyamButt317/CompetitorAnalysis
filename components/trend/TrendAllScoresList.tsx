@@ -25,7 +25,7 @@ export function TrendAllScoresList({ items }: TrendAllScoresListProps) {
           </thead>
           <tbody>
             {items.map((item) => (
-              <tr key={item.label} className="border-b border-slate-50 last:border-0">
+              <tr key={`${item.rank}-${item.label}`} className="border-b border-slate-50 last:border-0">
                 <td className="py-2.5 pr-4 text-xs font-semibold text-slate-400">
                   {item.rank}
                 </td>

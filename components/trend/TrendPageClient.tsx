@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { PageStatusShell } from "@/components/layout/PageStatusShell";
+import { CompanyLogo } from "@/components/ui/CompanyLogo";
+import { APP_COMPANY } from "@/lib/app-brand";
 import { TrendSubNavBar } from "@/components/trend/TrendPageShell";
 import { TrendView } from "@/components/trend/TrendView";
 import { mapGlobalTrendsToPage } from "@/lib/map-global-trends";
@@ -57,6 +59,9 @@ export function TrendPageClient() {
     return (
       <PageStatusShell activeId="trends">
         <div className="text-center">
+          <div className="mx-auto mb-4 flex justify-center">
+            <CompanyLogo variant="full" theme="light" name={APP_COMPANY.name} />
+          </div>
           <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
           <p className="text-sm text-slate-500">{loadingMessage}</p>
         </div>

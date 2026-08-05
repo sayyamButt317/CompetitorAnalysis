@@ -8,8 +8,18 @@ function withTrendId(base: string, trendId?: string): string {
 }
 
 export const Endpoint = {
-  COMPETITORANALYSISAPI: `${BASE_URL}/competitor-analysis/analyze`,
+  /** POST — starts analysis and returns a job_id */
+  COMPETITORANALYSISAPI: `${BASE_URL}/competitor-analysis/analyze/async`,
+  /** GET — poll job status / result by job_id */
+  POLLEDCOMPETITORANALYSISJOBS: (jobId: string) =>
+    `${BASE_URL}/competitor-analysis/jobs/${encodeURIComponent(jobId)}`,
+
   COMPETITORS: `${BASE_URL}/competitor-analysis/competitors`,
+
+  COMPETITORANALYSISRESULTSBYID: (analysisId: string) =>
+    `${BASE_URL}/competitor-analysis/results/${encodeURIComponent(analysisId)}`,
+  COMPETITORANALYSISRESULTS: `${BASE_URL}/competitor-analysis/results`,
+
   CONTENT: `${BASE_URL}/competitor-analysis/content`,
   CONTENT_LOCAL: `${LOCAL_URL}/competitor-analysis/content`,
   HASHTAGS: `${BASE_URL}/competitor-analysis/hashtags`,

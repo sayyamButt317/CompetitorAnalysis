@@ -1,12 +1,13 @@
 import type { DashboardData, NavItem } from "@/types/dashboard";
+import { APP_COMPANY } from "@/lib/app-brand";
 
 export { getNavItems, navItems } from "@/lib/nav-items";
 
 export const dashboardData: DashboardData = {
   company: {
-    name: "Techtimize LLC",
-    subtitle: "Techtimize LLC · AI Development · GCC Region",
-    logoInitials: "Tr",
+    name: APP_COMPANY.name,
+    subtitle: `${APP_COMPANY.subtitle} · GCC Region`,
+    logoInitials: APP_COMPANY.logoInitials,
   },
   lastUpdated: "May 20, 2024 · 10:30 AM",
   stats: [
@@ -65,6 +66,12 @@ export const dashboardData: DashboardData = {
     { label: "Tech", value: 20, color: "#f59e0b" },
     { label: "Business", value: 12, color: "#ef4444" },
     { label: "Other", value: 8, color: "#94a3b8" },
+  ],
+  contentCategories: [
+    { label: "Thought Leadership", value: 40, color: "#6366f1" },
+    { label: "Team & Culture", value: 25, color: "#8b5cf6" },
+    { label: "Product", value: 20, color: "#a78bfa" },
+    { label: "Hiring", value: 15, color: "#c4b5fd" },
   ],
   postingActivity: [
     { label: "Mon", value: 32 },
@@ -297,4 +304,7 @@ export const dashboardData: DashboardData = {
       ],
     },
   ],
+  recommendations: [],
+  similarityScores: [],
+  competitorLinkedIn: [],
 };

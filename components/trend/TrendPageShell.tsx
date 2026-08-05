@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { APP_COMPANY } from "@/lib/app-brand";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { getNavItems } from "@/lib/nav-items";
 
@@ -82,7 +83,7 @@ export function TrendPageShell({
   return (
     <DashboardLayout
       navItems={getNavItems(activeId)}
-      company={{ name: "Techtimize", logoInitials: "Tr" }}
+      company={{ name: APP_COMPANY.name, logoInitials: APP_COMPANY.logoInitials }}
     >
       <header className="border-b border-slate-200/80 bg-white px-6 py-5 lg:px-8">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

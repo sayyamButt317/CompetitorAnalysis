@@ -1,7 +1,14 @@
 import { AIInsightsCard } from "@/components/dashboard/AIInsightsCard";
+import { CompanyProfileCard } from "@/components/dashboard/CompanyProfileCard";
+import { CompanySocialCards } from "@/components/dashboard/CompanySocialCards";
 import { CompetitorComparisonTable } from "@/components/dashboard/CompetitorComparisonTable";
+import { CompetitorLinkedInTable } from "@/components/dashboard/CompetitorLinkedInTable";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { GapAnalysisCard } from "@/components/dashboard/GapAnalysisCard";
+import { RecommendationsCard } from "@/components/dashboard/RecommendationsCard";
+import { SimilarityScoresTable } from "@/components/dashboard/SimilarityScoresTable";
 import { TopPerformingPosts } from "@/components/dashboard/SocialPostCard";
+import { SwotGrid } from "@/components/dashboard/SwotGrid";
 import { TopCompetitorsTable } from "@/components/dashboard/TopCompetitorsTable";
 import { BarChart } from "@/components/charts/BarChart";
 import { ChartCard } from "@/components/charts/ChartCard";
@@ -32,6 +39,31 @@ export function DashboardView({ data, embedded = false }: DashboardViewProps) {
       <div className="space-y-5 p-6 lg:p-8">
         <StatCardGrid metrics={data.stats} />
 
+        {data.companyProfile && (
+          <CompanyProfileCard
+            profile={data.companyProfile}
+            discoveryReasoning={data.discoveryReasoning}
+          />
+        )}
+
+        <CompanySocialCards
+          instagram={data.companyInstagram}
+          linkedin={data.companyLinkedIn}
+        />
+
+        <CompetitorLinkedInTable rows={data.competitorLinkedIn} />
+
+        {(data.recommendations.length > 0 || data.swot) && (
+          <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+            <RecommendationsCard items={data.recommendations} />
+            {data.swot && <SwotGrid swot={data.swot} />}
+          </div>
+        )}
+
+        {data.gapAnalysis && <GapAnalysisCard gaps={data.gapAnalysis} />}
+
+        <SimilarityScoresTable rows={data.similarityScores} />
+
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
           <TopCompetitorsTable competitors={data.topCompetitors} />
 
@@ -44,13 +76,18 @@ export function DashboardView({ data, embedded = false }: DashboardViewProps) {
           </ChartCard>
         </div>
 
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           <ChartCard title="Content Type Distribution">
             <DonutChart segments={data.contentTypes} centerLabel="Content Mix" />
           </ChartCard>
           <ChartCard title="Content Theme Distribution">
             <DonutChart segments={data.contentThemes} centerLabel="Themes" />
           </ChartCard>
+          {data.contentCategories.length > 0 && (
+            <ChartCard title="Content Categories">
+              <DonutChart segments={data.contentCategories} centerLabel="Categories" />
+            </ChartCard>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">

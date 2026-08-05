@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
+import { APP_COMPANY } from "@/lib/app-brand";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { getNavItems } from "@/lib/nav-items";
 
 const defaultCompany = {
-  name: "Techtimize",
-  logoInitials: "Tr",
+  name: APP_COMPANY.name,
+  logoInitials: APP_COMPANY.logoInitials,
 };
 
 interface PageStatusShellProps {

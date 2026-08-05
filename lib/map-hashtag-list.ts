@@ -1,3 +1,4 @@
+import { APP_COMPANY } from "@/lib/app-brand";
 import { formatNumber } from "@/lib/format";
 import type { ContentListItem, ContentListResponse } from "@/types/content";
 import type {
@@ -225,7 +226,7 @@ export function mapHashtagListToPage(
   const companyName =
     byAnalysis[0]?.company_name ??
     content[0]?.company_name ??
-    "Hashtag Analysis";
+    APP_COMPANY.name;
 
   const rows: HashtagRow[] = hashtags.map((item, index) => {
     const normalized = normalizeTag(item.tag);

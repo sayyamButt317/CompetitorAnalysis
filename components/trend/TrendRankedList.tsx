@@ -31,7 +31,7 @@ export function TrendRankedList({
       <h3 className="mb-4 text-sm font-semibold text-slate-900">{title}</h3>
       <ul className="max-h-80 space-y-3 overflow-y-auto">
         {items.slice(0, maxItems).map((item) => (
-          <li key={item.label} className="flex items-start gap-3">
+          <li key={`${item.rank}-${item.label}`} className="flex items-start gap-3">
             <span
               className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-xs font-bold text-white ${
                 rankColors[(item.rank - 1) % rankColors.length]

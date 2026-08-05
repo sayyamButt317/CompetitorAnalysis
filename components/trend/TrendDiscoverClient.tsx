@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { APP_COMPANY } from "@/lib/app-brand";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { TrendDiscoverForm } from "@/components/trend/TrendDiscoverForm";
 import { TrendSubNavBar } from "@/components/trend/TrendPageShell";
@@ -82,7 +83,7 @@ export function TrendDiscoverClient() {
     return (
       <DashboardLayout
         navItems={getNavItems("trend-discover")}
-        company={{ name: "Techtimize", logoInitials: "Tr" }}
+        company={{ name: APP_COMPANY.name, logoInitials: APP_COMPANY.logoInitials }}
       >
         <div className="space-y-5 p-6 lg:p-8">
           <div className="flex flex-wrap items-center gap-2">
@@ -133,7 +134,7 @@ export function TrendDiscoverClient() {
   return (
     <DashboardLayout
       navItems={getNavItems("trend-discover")}
-      company={{ name: "Techtimize", logoInitials: "Tr" }}
+      company={{ name: APP_COMPANY.name, logoInitials: APP_COMPANY.logoInitials }}
     >
       <TrendSubNavBar />
       <div className="mx-auto max-w-3xl space-y-5 p-6 lg:p-8">

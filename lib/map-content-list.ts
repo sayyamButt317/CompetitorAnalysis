@@ -1,3 +1,4 @@
+import { APP_COMPANY } from "@/lib/app-brand";
 import { formatEngagementRate, formatNumber } from "@/lib/format";
 import type {
   ContentListItem,
@@ -175,7 +176,7 @@ export function mapContentListToPage(response: ContentListResponse): ContentPage
         new Date(b.timestamp ?? 0).getTime() - new Date(a.timestamp ?? 0).getTime(),
     );
 
-  const companyName = items[0]?.company_name ?? "Content Analysis";
+  const companyName = items[0]?.company_name ?? APP_COMPANY.name;
 
   return {
     company: {

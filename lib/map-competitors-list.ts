@@ -5,6 +5,7 @@ import type {
   CompetitorsPageData,
 } from "@/types/competitors";
 import type { ChartSegment, CompetitorRow, HashtagItem, StatMetric } from "@/types/dashboard";
+import { APP_COMPANY } from "@/lib/app-brand";
 import { formatEngagementRate, formatNumber } from "@/lib/format";
 
 const CHART_COLORS = [
@@ -182,7 +183,7 @@ export function mapCompetitorsListToPage(
   response: CompetitorsListResponse,
 ): CompetitorsPageData {
   const unique = dedupeCompetitors(response.competitors ?? []);
-  const companyName = unique[0]?.company_name ?? "Competitor Analysis";
+  const companyName = unique[0]?.company_name ?? APP_COMPANY.name;
 
   const ranked = [...unique].sort(
     (a, b) =>

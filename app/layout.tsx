@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { APP_COMPANY } from "@/lib/app-brand";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,8 +14,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Competitor Analysis | Techtimize",
+  title: "Competitor Analysis | Competra AI",
   description: "Social media competitor analysis dashboard",
+  icons: {
+    icon: APP_COMPANY.logoDark,
+    apple: APP_COMPANY.logoDark,
+  },
 };
 
 export default function RootLayout({
