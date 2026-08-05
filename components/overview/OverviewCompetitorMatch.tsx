@@ -217,7 +217,7 @@ export function OverviewCompetitorMatch({
             {competitor.employees.length > 0 && (
               <div className="mb-4">
                 <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                  People sample
+                  People
                 </p>
                 <ul className="space-y-1">
                   {competitor.employees.slice(0, 3).map((employee) => (
