@@ -43,7 +43,7 @@ export function OverviewDeepCoverage({
   return (
     <div className="space-y-5">
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
-        <h3 className="mb-3 text-sm font-semibold text-slate-800">Run Metadata & API Usage</h3>
+        <h3 className="mb-3 text-sm font-semibold text-slate-800">Metadata & API Usage</h3>
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-6">
           <Meta label="Mode" value={runMeta.matchingMode ?? "—"} />
           <Meta label="Agent" value={runMeta.agentMode ?? "—"} />

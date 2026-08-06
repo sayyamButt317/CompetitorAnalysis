@@ -4,17 +4,12 @@ import { SimilarityScoresTable } from "@/components/dashboard/SimilarityScoresTa
 import { DonutChart } from "@/components/charts/DonutChart";
 import type { GapAnalysisView, RecommendationItem, SimilarityRow } from "@/types/dashboard";
 import type { OverviewMarketInsights } from "@/types/overview";
-import type { SearchIntelligenceView } from "@/types/dashboard";
 
 interface OverviewIntelligencePanelsProps {
   gapAnalysis?: GapAnalysisView;
   recommendations: RecommendationItem[];
   similarityScores: SimilarityRow[];
   marketInsights?: OverviewMarketInsights;
-  searchIntelligence?: SearchIntelligenceView;
-  companyKeywords: string[];
-  companyProducts: string[];
-  companyFeatures: string[];
 }
 
 export function OverviewIntelligencePanels({
@@ -22,26 +17,9 @@ export function OverviewIntelligencePanels({
   recommendations,
   similarityScores,
   marketInsights,
-  searchIntelligence,
-  companyKeywords,
-  companyProducts,
-  companyFeatures,
 }: OverviewIntelligencePanelsProps) {
   return (
     <div className="space-y-5">
-      {(companyKeywords.length > 0 ||
-        companyProducts.length > 0 ||
-        companyFeatures.length > 0) && (
-        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
-          <h3 className="mb-3 text-sm font-semibold text-slate-800">Company Signals</h3>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <TagBlock title="Keywords" items={companyKeywords} />
-            <TagBlock title="Products" items={companyProducts} />
-            <TagBlock title="Features" items={companyFeatures} />
-          </div>
-        </section>
-      )}
-
       {similarityScores.length > 0 && <SimilarityScoresTable rows={similarityScores} />}
 
       {(gapAnalysis || recommendations.length > 0) && (
@@ -178,48 +156,6 @@ export function OverviewIntelligencePanels({
           )}
         </section>
       )}
-
-      {searchIntelligence && (
-        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h3 className="text-sm font-semibold text-slate-800">Search Intelligence</h3>
-            {searchIntelligence.confidence != null && (
-              <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
-                {Math.round(searchIntelligence.confidence * 100)}% confidence
-              </span>
-            )}
-          </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <TagBlock title="Search keywords" items={searchIntelligence.searchKeywords} />
-            <TagBlock title="Industry terms" items={searchIntelligence.industryTerms} />
-            <TagBlock title="Product terms" items={searchIntelligence.productTerms} />
-            <TagBlock title="Audience terms" items={searchIntelligence.audienceTerms} />
-            <TagBlock title="Competitor patterns" items={searchIntelligence.competitorPatterns} />
-            <TagBlock title="Queries" items={searchIntelligence.searchQueries} />
-            <TagBlock title="Alternative names" items={searchIntelligence.alternativeNames} />
-            <TagBlock title="Excluded terms" items={searchIntelligence.excludedTerms} />
-          </div>
-        </section>
-      )}
-    </div>
-  );
-}
-
-function TagBlock({ title, items }: { title: string; items: string[] }) {
-  if (items.length === 0) return null;
-  return (
-    <div>
-      <p className="mb-2 text-xs font-semibold text-slate-500">{title}</p>
-      <div className="flex flex-wrap gap-1.5">
-        {items.slice(0, 16).map((item, index) => (
-          <span
-            key={`${item}-${index}`}
-            className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700"
-          >
-            {item}
-          </span>
-        ))}
-      </div>
     </div>
   );
 }

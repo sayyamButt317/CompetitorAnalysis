@@ -88,10 +88,6 @@ export function OverviewView({ data }: OverviewViewProps) {
         recommendations={data.recommendations}
         similarityScores={data.similarityScores}
         marketInsights={data.marketInsights}
-        searchIntelligence={data.searchIntelligence}
-        companyKeywords={data.companyKeywords}
-        companyProducts={data.companyProducts}
-        companyFeatures={data.companyFeatures}
       />
 
       <OverviewDeepCoverage
