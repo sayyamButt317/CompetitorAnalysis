@@ -73,7 +73,7 @@ export function OverviewView({ data }: OverviewViewProps) {
         emptyLabel="No competitor Instagram media available yet."
       />
 
-      <AiSummarySwot summary={data.executiveSummary} swot={data.swot} />
+      <AiSummarySwot brief={data.executiveBrief} swot={data.swot} />
       <TopCompetitorsStrip competitors={data.topCompetitors} />
 
       <OverviewCompetitorMatch

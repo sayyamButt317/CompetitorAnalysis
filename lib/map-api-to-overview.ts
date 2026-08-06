@@ -21,6 +21,7 @@ import type {
   OverviewAverageSimilarity,
   OverviewCompanyExtras,
   OverviewDnaColumn,
+  OverviewExecutiveBrief,
   OverviewInstagramSection,
   OverviewLinkedInSection,
   OverviewMarketInsights,
@@ -37,7 +38,7 @@ import type {
   OverviewLinkedInMarketRow,
   OverviewReportExtras,
 } from "@/types/overview";
-import { formatEngagementRate, formatNumber } from "@/lib/format";
+import { formatEngagementRate, formatNumber, optionalText } from "@/lib/format";
 
 const CHART_COLORS = ["#6366f1", "#a78bfa", "#c4b5fd", "#22c55e", "#f59e0b", "#94a3b8", "#ef4444", "#0ea5e9"];
 
@@ -809,6 +810,75 @@ function buildCompetitors(response: CompetitorAnalysisResponse): OverviewCompeti
   }));
 }
 
+function buildExecutiveBrief(
+  response: CompetitorAnalysisResponse,
+  companyName: string,
+): OverviewExecutiveBrief | undefined {
+  const competitors = response.competitors ?? [];
+  if (competitors.length === 0) return undefined;
+
+  const profile = response.company_profile;
+  const analysis = response.company_analysis;
+
+  const highlights = competitors
+    .map((competitor, index) => {
+      const ig = competitor.instagram_analysis as
+        | {
+            media_mix?: { type?: string; format?: string; share_pct?: number }[];
+            content_categories?: { category: string; share_pct?: number }[];
+            themes?: { theme: string; share_pct?: number }[];
+          }
+        | undefined;
+      const strategy = competitor.content_strategy;
+
+      const mediaTypes = strategy?.media_types ?? ig?.media_mix ?? [];
+      const themes = strategy?.themes ?? ig?.themes ?? [];
+      const categories = strategy?.content_categories ?? ig?.content_categories ?? [];
+
+      const topFormat = mediaTypes[0];
+      const topTheme = themes[0];
+      const topCategory = categories[0];
+
+      const name = competitor.name ?? competitor.username ?? `Competitor ${index + 1}`;
+      const relevanceScore =
+        competitor.match_score ?? competitor.similarity?.overall ?? 0;
+
+      return {
+        id: `${competitor.username ?? name}-${index}`,
+        name,
+        username: optionalText(competitor.username),
+        relevanceScore,
+        primaryFormat: optionalText(
+          topFormat?.type ?? topFormat?.format ?? strategy?.primary_format,
+        ),
+        formatShare: topFormat?.share_pct,
+        topTheme: optionalText(topTheme?.theme),
+        themeShare: topTheme?.share_pct,
+        contentCategory: optionalText(
+          topCategory?.category ?? strategy?.primary_content_category,
+        ),
+        categoryShare: topCategory?.share_pct,
+        profileUrl: optionalText(competitor.profile_url),
+        imageUrl: optionalText(competitor.profile_picture_url ?? competitor.image_url),
+      };
+    })
+    .sort((a, b) => b.relevanceScore - a.relevanceScore);
+
+  return {
+    companyName,
+    industry: optionalText(profile?.industry ?? analysis?.industry),
+    region: optionalText(
+      response.filters_applied?.region ?? profile?.region ?? analysis?.region,
+    ),
+    competitorCount: response.competitor_count ?? competitors.length,
+    postCount: response.post_count ?? 0,
+    matchingMode: optionalText(
+      response.matching_mode ?? response.filters_applied?.matching_mode,
+    ),
+    competitors: highlights,
+  };
+}
+
 function buildComparison(
   response: CompetitorAnalysisResponse,
   companyIg: OverviewInstagramSection | undefined,
@@ -1519,9 +1589,9 @@ function buildLinkedInMarket(
     ].filter(Boolean) as string[];
 
     return {
-      name: item.name ?? "Competitor",
-      url: item.linkedin_url ?? undefined,
-      industry: item.industry ?? undefined,
+      name: optionalText(item.name) ?? "Competitor",
+      url: optionalText(item.linkedin_url),
+      industry: optionalText(item.industry),
       employeeCount: item.employee_count ?? 0,
       followers: item.followers ?? undefined,
       isHiring: Boolean(item.hiring),
@@ -1553,10 +1623,13 @@ function buildReportExtras(response: CompetitorAnalysisResponse): OverviewReport
   }
 
   return {
-    intelligenceSummary:
-      response.competitor_intelligence_report?.summary ??
-      response.ai_report?.summary ??
-      undefined,
+    intelligenceSummary: optionalText(
+      typeof response.competitor_intelligence_report === "object" &&
+        response.competitor_intelligence_report &&
+        "summary" in response.competitor_intelligence_report
+        ? response.competitor_intelligence_report.summary
+        : undefined,
+    ) ?? optionalText(response.ai_report?.summary),
     webCrawlKeys: Object.keys(webCrawl),
     competitorIntelligencePresent: intelligence != null,
     competitorIntelligencePreview,
@@ -1741,12 +1814,21 @@ export function mapApiResponseToOverview(
       response.ai_report?.summary ??
       response.summary ??
       response.company_social_analysis?.company_dna?.value_proposition,
+    executiveBrief: buildExecutiveBrief(response, name),
     swot: response.analysis?.swot
       ? {
-          strengths: response.analysis.swot.strengths ?? [],
-          weaknesses: response.analysis.swot.weaknesses ?? [],
-          opportunities: response.analysis.swot.opportunities ?? [],
-          threats: response.analysis.swot.threats ?? [],
+          strengths: (response.analysis.swot.strengths ?? [])
+            .map((item) => optionalText(item))
+            .filter((item): item is string => Boolean(item)),
+          weaknesses: (response.analysis.swot.weaknesses ?? [])
+            .map((item) => optionalText(item))
+            .filter((item): item is string => Boolean(item)),
+          opportunities: (response.analysis.swot.opportunities ?? [])
+            .map((item) => optionalText(item))
+            .filter((item): item is string => Boolean(item)),
+          threats: (response.analysis.swot.threats ?? [])
+            .map((item) => optionalText(item))
+            .filter((item): item is string => Boolean(item)),
         }
       : undefined,
     topCompetitors,

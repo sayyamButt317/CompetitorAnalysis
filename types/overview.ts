@@ -159,6 +159,31 @@ export interface OverviewCompetitorCard {
   imageUrl?: string;
 }
 
+export interface OverviewExecutiveCompetitorHighlight {
+  id: string;
+  name: string;
+  username?: string;
+  relevanceScore: number;
+  primaryFormat?: string;
+  formatShare?: number;
+  topTheme?: string;
+  themeShare?: number;
+  contentCategory?: string;
+  categoryShare?: number;
+  profileUrl?: string;
+  imageUrl?: string;
+}
+
+export interface OverviewExecutiveBrief {
+  companyName: string;
+  industry?: string;
+  region?: string;
+  competitorCount: number;
+  postCount: number;
+  matchingMode?: string;
+  competitors: OverviewExecutiveCompetitorHighlight[];
+}
+
 export interface OverviewCompetitorDetail {
   id: string;
   name: string;
@@ -432,6 +457,7 @@ export interface OverviewPageData {
   linkedin?: OverviewLinkedInSection;
   website: OverviewWebsiteSection;
   executiveSummary?: string;
+  executiveBrief?: OverviewExecutiveBrief;
   swot?: SwotView;
   topCompetitors: OverviewCompetitorCard[];
   competitors: OverviewCompetitorDetail[];

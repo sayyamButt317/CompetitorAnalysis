@@ -163,7 +163,7 @@ export function LinkedInOverviewCard({ data }: LinkedInOverviewCardProps) {
       {data.employees.length > 0 && (
         <div>
           <div className="mb-2 flex items-center justify-between gap-2">
-            <p className="text-xs font-semibold text-slate-500">Top Employees</p>
+            <p className="text-xs font-semibold text-slate-500">Employees</p>
             <Link
               href="/employees"
               className="text-[11px] font-medium text-indigo-600 hover:text-indigo-700"

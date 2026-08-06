@@ -1,3 +1,4 @@
+import { displayText } from "@/lib/format";
 import type {
   OverviewLinkedInMarketRow,
   OverviewReportExtras,
@@ -42,7 +43,7 @@ export function OverviewPayloadExtras({
         <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
           <h3 className="mb-3 text-sm font-semibold text-slate-800">SEO & Web Crawl</h3>
           <div className="mb-4 grid grid-cols-2 gap-2 md:grid-cols-4">
-            <Meta label="Website" value={website.url ?? "—"} />
+            <Meta label="Website" value={displayText(website.url)} />
             <Meta label="Web crawl" value={website.webCrawlAvailable ? "Available" : "Empty"} />
             <Meta label="SEO keywords" value={String(website.seoKeywords.length || "—")} />
             <Meta label="Keyword gaps" value={String(website.seoKeywordGaps.length || "—")} />
@@ -64,9 +65,9 @@ export function OverviewPayloadExtras({
         <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
           <h3 className="mb-3 text-sm font-semibold text-slate-800">Filters Applied</h3>
           <div className="mb-3 grid grid-cols-2 gap-2 md:grid-cols-4">
-            <Meta label="Mode" value={runMeta.matchingMode ?? "—"} />
-            <Meta label="Region" value={runMeta.region ?? "—"} />
-            <Meta label="Source" value={runMeta.discoverySource ?? "—"} />
+            <Meta label="Mode" value={displayText(runMeta.matchingMode)} />
+            <Meta label="Region" value={displayText(runMeta.region)} />
+            <Meta label="Source" value={displayText(runMeta.discoverySource)} />
             <Meta label="Limit" value={String(runMeta.competitorLimit ?? "—")} />
           </div>
           <TagBlock title="Selected competitors" items={runMeta.selectedCompetitors} />
@@ -124,7 +125,7 @@ export function OverviewPayloadExtras({
                   )}
                 </div>
                 <p className="mb-2 text-[11px] text-slate-500">
-                  {row.industry ?? "Industry n/a"} · {row.employeeCount} employees
+                  {displayText(row.industry, "Industry n/a")} · {row.employeeCount} employees
                   {row.followers != null ? ` · ${row.followers} followers` : ""}
                   {row.thoughtLeadershipScore
                     ? ` · TL ${Math.round(row.thoughtLeadershipScore)}`
@@ -132,24 +133,24 @@ export function OverviewPayloadExtras({
                 </p>
                 {row.specialties.length > 0 && (
                   <div className="mb-2 flex flex-wrap gap-1">
-                    {row.specialties.slice(0, 4).map((item) => (
+                    {row.specialties.slice(0, 4).map((item, index) => (
                       <span
-                        key={item}
+                        key={`${displayText(item)}-${index}`}
                         className="rounded-md bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-600"
                       >
-                        {item}
+                        {displayText(item)}
                       </span>
                     ))}
                   </div>
                 )}
                 {row.signals.length > 0 && (
                   <div className="flex flex-wrap gap-1">
-                    {row.signals.slice(0, 6).map((signal) => (
+                    {row.signals.slice(0, 6).map((signal, index) => (
                       <span
-                        key={signal}
+                        key={`${displayText(signal)}-${index}`}
                         className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700"
                       >
-                        {signal}
+                        {displayText(signal)}
                       </span>
                     ))}
                   </div>
@@ -182,10 +183,10 @@ function TagBlock({ title, items }: { title: string; items: string[] }) {
       <div className="flex flex-wrap gap-1.5">
         {items.slice(0, 24).map((item, index) => (
           <span
-            key={`${item}-${index}`}
+            key={`${displayText(item)}-${index}`}
             className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700"
           >
-            {item}
+            {displayText(item)}
           </span>
         ))}
       </div>
