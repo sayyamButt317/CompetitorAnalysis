@@ -38,7 +38,43 @@ export function LinkedInOverviewCard({ data }: LinkedInOverviewCardProps) {
         <MiniStat label="Avg post length" value={String(data.avgPostLength ?? "—")} />
         <MiniStat label="TL posts" value={String(data.thoughtLeadershipPosts ?? "—")} />
         <MiniStat label="Company size" value={data.companySize ?? "—"} />
+        {data.followers != null && (
+          <MiniStat label="Followers" value={String(data.followers)} />
+        )}
+        {data.thoughtLeadershipScore > 0 && (
+          <MiniStat label="TL score" value={String(Math.round(data.thoughtLeadershipScore))} />
+        )}
       </div>
+
+      {(data.isThoughtLeader || data.website || data.postsUrl) && (
+        <div className="mb-4 flex flex-wrap gap-1.5">
+          {data.isThoughtLeader && (
+            <span className="rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-medium text-violet-700">
+              Thought leader
+            </span>
+          )}
+          {data.website && (
+            <a
+              href={data.website}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-sky-700 hover:bg-slate-200"
+            >
+              Website →
+            </a>
+          )}
+          {data.postsUrl && (
+            <a
+              href={data.postsUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-medium text-sky-700 hover:bg-sky-100"
+            >
+              All posts →
+            </a>
+          )}
+        </div>
+      )}
 
       {(data.industry || data.headquarters || data.tagline) && (
         <div className="mb-4 space-y-2">
@@ -107,6 +143,22 @@ export function LinkedInOverviewCard({ data }: LinkedInOverviewCardProps) {
               <span
                 key={`${signal}-${index}`}
                 className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700"
+              >
+                {signal}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {data.hiringSignals.length > 0 && (
+        <div className="mb-4">
+          <p className="mb-2 text-xs font-semibold text-slate-500">Hiring Signals</p>
+          <div className="flex flex-wrap gap-1.5">
+            {data.hiringSignals.map((signal, index) => (
+              <span
+                key={`${signal}-${index}`}
+                className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-medium text-amber-700"
               >
                 {signal}
               </span>

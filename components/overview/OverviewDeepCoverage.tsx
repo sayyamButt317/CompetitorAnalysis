@@ -5,6 +5,7 @@ import type {
   OverviewCompetitorGaps,
   OverviewContentStrategyIntel,
   OverviewMarketingIntel,
+  OverviewPipelineStatus,
   OverviewPriorityGap,
   OverviewReviewIntel,
   OverviewRunMeta,
@@ -16,6 +17,7 @@ import { formatEngagementRate } from "@/lib/format";
 interface OverviewDeepCoverageProps {
   runMeta: OverviewRunMeta;
   companyExtras: OverviewCompanyExtras;
+  pipelineStatus?: OverviewPipelineStatus;
   averageSimilarity?: OverviewAverageSimilarity;
   priorityGaps: OverviewPriorityGap[];
   businessSignals?: OverviewBusinessSignals;
@@ -30,6 +32,7 @@ interface OverviewDeepCoverageProps {
 export function OverviewDeepCoverage({
   runMeta,
   companyExtras,
+  pipelineStatus,
   averageSimilarity,
   priorityGaps,
   businessSignals,
@@ -42,6 +45,37 @@ export function OverviewDeepCoverage({
 }: OverviewDeepCoverageProps) {
   return (
     <div className="space-y-5">
+      {pipelineStatus && (
+        <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+          <h3 className="mb-3 text-sm font-semibold text-slate-800">Analysis Pipeline Status</h3>
+          <div className="mb-4 grid grid-cols-2 gap-2 md:grid-cols-4">
+            <Flag on={pipelineStatus.companyUnderstood} label="Company understood" />
+            <Flag on={pipelineStatus.websiteCrawled} label="Website crawled" />
+            <Flag on={pipelineStatus.instagramAnalyzed} label="Instagram analyzed" />
+            <Flag on={pipelineStatus.linkedinAnalyzed} label="LinkedIn analyzed" />
+          </div>
+          {pipelineStatus.detectedNiche && (
+            <p className="mb-3 text-xs text-slate-600">
+              <span className="font-semibold text-slate-500">Detected niche:</span>{" "}
+              {pipelineStatus.detectedNiche}
+            </p>
+          )}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <TagBlock title="Pipeline services" items={pipelineStatus.services} />
+            <TagBlock title="Pipeline technologies" items={pipelineStatus.technologies} />
+          </div>
+          {pipelineStatus.warnings.length > 0 && (
+            <ul className="mt-3 space-y-1">
+              {pipelineStatus.warnings.map((warning) => (
+                <li key={warning} className="text-xs text-amber-700">
+                  {warning}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
         <h3 className="mb-3 text-sm font-semibold text-slate-800">Metadata & API Usage</h3>
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-6">
@@ -126,6 +160,10 @@ export function OverviewDeepCoverage({
             <SimilarityBar label="Industry" value={averageSimilarity.industry} />
             <SimilarityBar label="Pricing" value={averageSimilarity.pricing} />
             <SimilarityBar label="Audience" value={averageSimilarity.targetAudience} />
+            {averageSimilarity.audience != null &&
+              averageSimilarity.audience !== averageSimilarity.targetAudience && (
+              <SimilarityBar label="Audience (alt)" value={averageSimilarity.audience} />
+            )}
             {averageSimilarity.products != null && (
               <SimilarityBar label="Products" value={averageSimilarity.products} />
             )}
@@ -414,6 +452,9 @@ export function OverviewDeepCoverage({
                     <h4 className="truncate text-sm font-semibold text-slate-900">{site.name}</h4>
                     {site.companyName && site.companyName !== site.name && (
                       <p className="truncate text-xs text-slate-500">{site.companyName}</p>
+                    )}
+                    {site.username && (
+                      <p className="truncate text-xs text-slate-400">@{site.username}</p>
                     )}
                   </div>
                   {site.confidence != null && (

@@ -13,6 +13,16 @@ export function WebsiteIntelligenceCard({ data }: WebsiteIntelligenceCardProps) 
           <p className="text-xs text-slate-400">
             {data.available ? "Derived from crawl & search signals" : "Limited website data"}
           </p>
+          {data.url && (
+            <a
+              href={data.url.startsWith("http") ? data.url : `https://${data.url}`}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-1 inline-block truncate text-xs font-medium text-sky-700 hover:text-sky-800"
+            >
+              {data.url}
+            </a>
+          )}
         </div>
         <span className="rounded-lg bg-emerald-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
           Web

@@ -5,6 +5,19 @@ interface MediaPostCardProps {
   post: OverviewMediaPost;
 }
 
+function formatPostDate(value?: string): string | null {
+  if (!value) return null;
+  try {
+    return new Date(value).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  } catch {
+    return value;
+  }
+}
+
 export function MediaPostCard({ post }: MediaPostCardProps) {
   const preview = post.thumbnailUrl ?? post.mediaUrl;
   const isDirectVideo =
@@ -48,14 +61,33 @@ export function MediaPostCard({ post }: MediaPostCardProps) {
       </div>
 
       <div className="flex flex-1 flex-col gap-2 p-3">
-        {post.ownerHandle && (
-          <p className="truncate text-[11px] font-medium text-slate-500">@{post.ownerHandle}</p>
+        {(post.ownerHandle || post.ownerName) && (
+          <p className="truncate text-[11px] font-medium text-slate-500">
+            {post.ownerName ?? `@${post.ownerHandle}`}
+            {post.ownerName && post.ownerHandle ? ` · @${post.ownerHandle}` : ""}
+          </p>
+        )}
+        {formatPostDate(post.timestamp) && (
+          <p className="text-[10px] text-slate-400">{formatPostDate(post.timestamp)}</p>
         )}
         <p className="line-clamp-3 text-xs leading-relaxed text-slate-700">{post.caption}</p>
         <div className="mt-auto flex items-center justify-between gap-2 text-[11px] text-slate-500">
           <span>{formatNumber(post.likes)} likes</span>
           <span>{formatNumber(post.comments)} comments</span>
+          {post.views != null && <span>{formatNumber(post.views)} views</span>}
         </div>
+        {post.hashtags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {post.hashtags.slice(0, 4).map((tag, index) => (
+              <span
+                key={`${tag}-${index}`}
+                className="rounded-md bg-pink-50 px-1.5 py-0.5 text-[10px] font-medium text-pink-700"
+              >
+                {tag.startsWith("#") ? tag : `#${tag}`}
+              </span>
+            ))}
+          </div>
+        )}
         {post.engagementRate != null && (
           <p className="text-[11px] font-semibold text-indigo-600">
             {formatEngagementRate(post.engagementRate)} ER

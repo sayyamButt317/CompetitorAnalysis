@@ -34,7 +34,42 @@ export function InstagramOverviewCard({ data }: InstagramOverviewCardProps) {
         <MiniStat label="Interactions" value={formatNumber(data.totalInteractions)} />
         <MiniStat label="Top Format" value={data.primaryFormat ?? "—"} />
         <MiniStat label="Best Format" value={data.bestFormat ?? "—"} />
+        {data.primaryCategory && (
+          <MiniStat label="Category" value={data.primaryCategory} />
+        )}
+        {data.bestFormatEngagement != null && (
+          <MiniStat
+            label="Best format ER"
+            value={formatEngagementRate(data.bestFormatEngagement)}
+          />
+        )}
       </div>
+
+      {data.postingFrequency && (
+        <div className="mb-4 grid grid-cols-2 gap-2">
+          {data.postingFrequency.postsPerWeek != null && (
+            <MiniStat
+              label="Posts / week"
+              value={String(data.postingFrequency.postsPerWeek)}
+            />
+          )}
+          {data.postingFrequency.avgDaysBetween != null && (
+            <MiniStat
+              label="Avg days between"
+              value={String(data.postingFrequency.avgDaysBetween)}
+            />
+          )}
+        </div>
+      )}
+
+      {data.website && (
+        <p className="mb-4 truncate text-xs text-slate-500">
+          <span className="font-semibold">Website:</span>{" "}
+          <a href={data.website} target="_blank" rel="noreferrer" className="text-sky-700 hover:text-sky-800">
+            {data.website}
+          </a>
+        </p>
+      )}
 
       {data.contentFocus && (
         <p className="mb-4 text-xs leading-relaxed text-slate-500">{data.contentFocus}</p>
@@ -89,6 +124,22 @@ export function InstagramOverviewCard({ data }: InstagramOverviewCardProps) {
                 className="rounded-full bg-indigo-50 px-2.5 py-1 text-[11px] font-medium text-indigo-700"
               >
                 {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {data.nicheKeywords.length > 0 && (
+        <div className="mt-4">
+          <p className="mb-2 text-xs font-semibold text-slate-500">Niche Keywords</p>
+          <div className="flex flex-wrap gap-1.5">
+            {data.nicheKeywords.slice(0, 10).map((keyword, index) => (
+              <span
+                key={`${keyword}-${index}`}
+                className="rounded-full bg-pink-50 px-2.5 py-1 text-[11px] font-medium text-pink-700"
+              >
+                {keyword}
               </span>
             ))}
           </div>

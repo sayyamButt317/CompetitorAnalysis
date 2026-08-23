@@ -118,6 +118,46 @@ export function OverviewCompetitorMatch({
               <p className="mb-4 line-clamp-3 text-xs leading-relaxed text-slate-600">{competitor.bio}</p>
             )}
 
+            {(competitor.contentFocus || competitor.primaryFormat) && (
+              <div className="mb-4 space-y-1">
+                {competitor.contentFocus && (
+                  <p className="text-xs leading-relaxed text-slate-600">{competitor.contentFocus}</p>
+                )}
+                {competitor.primaryFormat && (
+                  <p className="text-[11px] text-slate-500">
+                    Primary format: <span className="font-medium text-slate-700">{competitor.primaryFormat}</span>
+                  </p>
+                )}
+              </div>
+            )}
+
+            {competitor.thoughtLeadershipScore > 0 && (
+              <p className="mb-4 text-[11px] text-slate-500">
+                LinkedIn thought leadership score:{" "}
+                <span className="font-semibold text-slate-700">
+                  {Math.round(competitor.thoughtLeadershipScore)}
+                </span>
+              </p>
+            )}
+
+            {competitor.mediaMix.length > 0 && (
+              <div className="mb-4">
+                <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                  Media mix
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {competitor.mediaMix.map((segment) => (
+                    <span
+                      key={segment.label}
+                      className="rounded-md bg-pink-50 px-2 py-0.5 text-[10px] font-medium text-pink-700"
+                    >
+                      {segment.label} {segment.value}%
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
               <MiniStat label="Followers" value={formatNumber(competitor.followers)} />
               <MiniStat label="Engagement" value={formatEngagementRate(competitor.avgEngagement)} />
@@ -243,6 +283,69 @@ export function OverviewCompetitorMatch({
                       <p className="line-clamp-2 text-[11px] leading-relaxed text-slate-600">
                         {post.text}
                       </p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {competitor.linkedinThemes.length > 0 && (
+              <div className="mb-4">
+                <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                  LinkedIn themes
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {competitor.linkedinThemes.map((theme, index) => (
+                    <span
+                      key={`${theme}-${index}`}
+                      className="rounded-md bg-sky-50 px-2 py-0.5 text-[10px] font-medium text-sky-700"
+                    >
+                      {theme}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {competitor.hiringSignals.length > 0 && (
+              <div className="mb-4">
+                <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                  Hiring signals
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {competitor.hiringSignals.map((signal, index) => (
+                    <span
+                      key={`${signal}-${index}`}
+                      className="rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700"
+                    >
+                      {signal}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {competitor.jobOpenings.length > 0 && (
+              <div className="mb-4">
+                <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                  Job openings
+                </p>
+                <ul className="space-y-1.5">
+                  {competitor.jobOpenings.slice(0, 3).map((job, index) => (
+                    <li key={`${job.title}-${index}`} className="text-xs text-slate-600">
+                      {job.url ? (
+                        <a
+                          href={job.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-medium text-sky-700 hover:text-sky-800"
+                        >
+                          {job.title}
+                        </a>
+                      ) : (
+                        <span className="font-medium text-slate-700">{job.title}</span>
+                      )}
+                      {job.location ? ` · ${job.location}` : ""}
                     </li>
                   ))}
                 </ul>

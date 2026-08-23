@@ -22,6 +22,7 @@ export function SimilarityScoresTable({ rows }: SimilarityScoresTableProps) {
           <thead>
             <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-400">
               <th className="px-3 py-2 font-medium">Competitor</th>
+              <th className="px-3 py-2 font-medium">Website</th>
               <th className="px-3 py-2 font-medium">Overall</th>
               <th className="px-3 py-2 font-medium">Services</th>
               <th className="px-3 py-2 font-medium">Tech</th>
@@ -37,6 +38,20 @@ export function SimilarityScoresTable({ rows }: SimilarityScoresTableProps) {
                   <p className="font-medium text-slate-800">{row.name}</p>
                   {row.username && (
                     <p className="text-xs text-slate-400">@{row.username}</p>
+                  )}
+                </td>
+                <td className="px-3 py-2.5 text-xs">
+                  {row.website ? (
+                    <a
+                      href={row.website.startsWith("http") ? row.website : `https://${row.website}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sky-700 hover:text-sky-800"
+                    >
+                      {row.website.replace(/^https?:\/\//, "").slice(0, 28)}
+                    </a>
+                  ) : (
+                    <span className="text-slate-400">—</span>
                   )}
                 </td>
                 <td className="px-3 py-2.5 font-semibold text-indigo-600">{pct(row.overall)}</td>

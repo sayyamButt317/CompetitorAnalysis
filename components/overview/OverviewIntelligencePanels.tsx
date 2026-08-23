@@ -1,8 +1,9 @@
 import { GapAnalysisCard } from "@/components/dashboard/GapAnalysisCard";
 import { RecommendationsCard } from "@/components/dashboard/RecommendationsCard";
+import { SearchIntelligenceCard } from "@/components/dashboard/SearchIntelligenceCard";
 import { SimilarityScoresTable } from "@/components/dashboard/SimilarityScoresTable";
 import { DonutChart } from "@/components/charts/DonutChart";
-import type { GapAnalysisView, RecommendationItem, SimilarityRow } from "@/types/dashboard";
+import type { GapAnalysisView, RecommendationItem, SearchIntelligenceView, SimilarityRow } from "@/types/dashboard";
 import type { OverviewMarketInsights } from "@/types/overview";
 
 interface OverviewIntelligencePanelsProps {
@@ -10,6 +11,7 @@ interface OverviewIntelligencePanelsProps {
   recommendations: RecommendationItem[];
   similarityScores: SimilarityRow[];
   marketInsights?: OverviewMarketInsights;
+  searchIntelligence?: SearchIntelligenceView;
 }
 
 export function OverviewIntelligencePanels({
@@ -17,10 +19,15 @@ export function OverviewIntelligencePanels({
   recommendations,
   similarityScores,
   marketInsights,
+  searchIntelligence,
 }: OverviewIntelligencePanelsProps) {
   return (
     <div className="space-y-5">
       {similarityScores.length > 0 && <SimilarityScoresTable rows={similarityScores} />}
+
+      {searchIntelligence && (
+        <SearchIntelligenceCard data={searchIntelligence} />
+      )}
 
       {(gapAnalysis || recommendations.length > 0) && (
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">

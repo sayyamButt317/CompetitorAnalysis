@@ -1,5 +1,6 @@
 import { AiSummarySwot, TopCompetitorsStrip } from "@/components/overview/AiSummaryAndCompetitors";
 import { CompanyDnaGrid } from "@/components/overview/CompanyDnaGrid";
+import { OverviewCompanyCatalog } from "@/components/overview/OverviewCompanyCatalog";
 import { InstagramOverviewCard } from "@/components/overview/InstagramOverviewCard";
 import { LinkedInOverviewCard } from "@/components/overview/LinkedInOverviewCard";
 import { OverviewCompetitorMatch } from "@/components/overview/OverviewCompetitorMatch";
@@ -45,6 +46,12 @@ export function OverviewView({ data }: OverviewViewProps) {
       <OverviewMetricCards metrics={data.metrics} />
       <CompanyDnaGrid columns={data.dna} />
 
+      <OverviewCompanyCatalog
+        keywords={data.companyKeywords}
+        products={data.companyProducts}
+        features={data.companyFeatures}
+      />
+
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
         {data.instagram ? (
           <InstagramOverviewCard data={data.instagram} />
@@ -73,7 +80,11 @@ export function OverviewView({ data }: OverviewViewProps) {
         emptyLabel="No competitor Instagram media available yet."
       />
 
-      <AiSummarySwot brief={data.executiveBrief} swot={data.swot} />
+      <AiSummarySwot
+        brief={data.executiveBrief}
+        executiveSummary={data.executiveSummary}
+        swot={data.swot}
+      />
       <TopCompetitorsStrip competitors={data.topCompetitors} />
 
       <OverviewCompetitorMatch
@@ -88,11 +99,13 @@ export function OverviewView({ data }: OverviewViewProps) {
         recommendations={data.recommendations}
         similarityScores={data.similarityScores}
         marketInsights={data.marketInsights}
+        searchIntelligence={data.searchIntelligence}
       />
 
       <OverviewDeepCoverage
         runMeta={data.runMeta}
         companyExtras={data.companyExtras}
+        pipelineStatus={data.pipelineStatus}
         averageSimilarity={data.averageSimilarity}
         priorityGaps={data.priorityGaps}
         businessSignals={data.businessSignals}

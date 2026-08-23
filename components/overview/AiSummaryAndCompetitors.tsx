@@ -9,6 +9,7 @@ import type { SwotView } from "@/types/dashboard";
 
 interface AiSummarySwotProps {
   brief?: OverviewExecutiveBrief;
+  executiveSummary?: string;
   swot?: SwotView;
 }
 
@@ -44,12 +45,16 @@ const swotBlocks: {
   },
 ];
 
-export function AiSummarySwot({ brief, swot }: AiSummarySwotProps) {
-  if (!brief && !swot) return null;
+export function AiSummarySwot({ brief, executiveSummary, swot }: AiSummarySwotProps) {
+  if (!brief && !swot && !executiveSummary) return null;
 
   return (
     <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
       <h3 className="mb-4 text-sm font-semibold text-slate-800">AI Executive Summary</h3>
+
+      {executiveSummary && (
+        <p className="mb-5 text-sm leading-relaxed text-slate-600">{executiveSummary}</p>
+      )}
 
       {brief && <ExecutiveBriefPanel brief={brief} />}
 
@@ -299,9 +304,7 @@ export function TopCompetitorsStrip({ competitors }: TopCompetitorsStripProps) {
             className="rounded-xl border border-slate-100 bg-slate-50/80 p-3"
           >
             <div className="mb-3 flex items-start justify-between gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-xs font-bold text-indigo-700">
-                {competitor.initials}
-              </div>
+              <Avatar name={competitor.name} imageUrl={competitor.imageUrl} size="md" />
               {competitor.matchPct != null && (
                 <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
                   {competitor.matchPct}% Match
